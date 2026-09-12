@@ -1,776 +1,98 @@
+using Frosty.Sdk.Attributes;
+using Frosty.Sdk.Ebx;
+using Frosty.Sdk.Interfaces;
+using Frosty.Sdk.IO.Dbx;
+using Frosty.Sdk.Managers;
+using Frosty.Sdk.Managers.Entries;
+using Microsoft.VisualBasic.FileIO;
+using Octokit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml;
-using System.Reflection;
-using Frosty.Sdk.Ebx;
-using Frosty.Sdk.Attributes;
-using Frosty.Sdk.Managers.Entries;
-using Frosty.Sdk.Managers;
-using Frosty.Sdk.Interfaces;
-using static Frosty.Sdk.Sdk.TypeFlags;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Xml;
+using YamlDotNet.Core.Tokens;
+using static Frosty.Sdk.Sdk.TypeFlags;
 
 namespace Frosty.Sdk.IO;
 
-public sealed class DbxWriter : IDisposable
+public sealed class EbxField
 {
-    private static readonly string s_instanceGuidName = "__InstanceGuid";
-    private static readonly string s_instanceIdName = "__Id";
+    public string Name { get; private set; }
+    public Type Type { get; private set; }
+    public PropertyInfo Property { get; private set; }
+    public EbxFieldMetaAttribute Meta { get; private set; }
 
-    private readonly XmlWriterSettings m_settings = new() { Indent = true, IndentChars = "\t", NewLineChars = "\n"};
+    public bool IsTransient { get; private set; }
+    public bool IsHidden { get; private set; }
 
-    private string m_filePath;
-    private XmlWriter? m_xmlWriter;
+    public TypeEnum FieldType { get; private set; }
+    public CategoryEnum FieldCategory { get; private set; }
 
-    public DbxWriter()
+    public Type? DeclaringType => Property.DeclaringType;
+
+    public EbxField(PropertyInfo property)
     {
-        m_filePath = string.Empty;
+        Name = property.Name;
+        Type = property.PropertyType;
+        Property = property;
+        Meta = property.GetCustomAttribute<EbxFieldMetaAttribute>()!;
+
+        IsTransient = property.GetCustomAttribute<IsTransientAttribute>() != null;
+        IsHidden = property.GetCustomAttribute<IsHiddenAttribute>() != null;
+
+        FieldType = Meta.Flags.GetTypeEnum();
+        FieldCategory = Meta.Flags.GetCategoryEnum();
     }
 
-    public DbxWriter(string inFilePath)
+    public object? GetValue(object target)
     {
-        m_filePath = inFilePath;
-        m_xmlWriter = XmlWriter.Create(m_filePath, m_settings);
+        return Property.GetValue(target);
+    }
+}
+
+public static class DbxTypeCache
+{
+    private static readonly Dictionary<Type, List<EbxField>> s_cache = new();
+
+    public static List<EbxField> GetMembers(object inObj)
+    {
+        Type objType = inObj.GetType();
+
+        if(s_cache.TryGetValue(objType, out var values))
+        {
+            return values;
+        }
+
+        List<EbxField> members = new();
+
+        var properties = GetAllProperties(objType, true, true);
+
+        foreach(var pi in properties)
+        {
+            members.Add(new EbxField(pi));
+        }
+
+        s_cache.Add(objType, members);
+        return members;
     }
 
-    public DbxWriter(Stream inStream)
+    private static List<PropertyInfo> GetAllProperties(Type classType, bool checkBaseTypes = false, bool shouldSort = false)
     {
-        m_filePath = string.Empty;
-        m_xmlWriter = XmlWriter.Create(inStream, m_settings);
+        List<PropertyInfo> props = new();
+        GetAllProperties(classType, ref props, checkBaseTypes, shouldSort);
+        return props;
     }
 
-    public void Write(EbxPartition inPartition)
-    {
-        if (!inPartition.IsValid)
-        {
-            return;
-        }
-
-        WriteAsset(inPartition);
-    }
-
-    public void Write(EbxPartition inPartition, string inFilePath)
-    {
-        m_xmlWriter?.Close();
-        m_xmlWriter = XmlWriter.Create(inFilePath, m_settings);
-        m_filePath = inFilePath;
-
-        if (!inPartition.IsValid)
-        {
-            return;
-        }
-
-        WriteAsset(inPartition);
-    }
-
-    public void Dispose()
-    {
-        m_xmlWriter?.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    #region Partition Writing
-    private void WritePartitionStart(Guid inAssetGuid, Guid inPrimaryInstanceGuid)
-    {
-        m_xmlWriter!.WriteStartElement("partition");
-        m_xmlWriter.WriteAttributeString("guid", inAssetGuid.ToString());
-        m_xmlWriter.WriteAttributeString("primaryInstance", inPrimaryInstanceGuid.ToString());
-    }
-
-    private void WritePartitionEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    #endregion
-
-    #region Instance Writing
-
-    private void WriteInstanceStart(AssetClassGuid classGuid, string type, string? id = null)
-    {
-        m_xmlWriter!.WriteStartElement("instance");
-        if (id is not null)
-        {
-            m_xmlWriter.WriteAttributeString("id", id);
-        }
-        m_xmlWriter.WriteAttributeString("guid", classGuid.ToString());
-
-        m_xmlWriter.WriteAttributeString("type", type);
-        m_xmlWriter.WriteAttributeString("exported", classGuid.IsExported.ToString());
-    }
-
-    private void WriteInstanceEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    /// <summary>
-    /// Writes the given ebx object to the dbx as an instance.
-    /// </summary>
-    /// <param name="ebxObj"></param>
-    private void WriteInstance(object ebxObj)
-    {
-        AssetClassGuid guid = ((dynamic)ebxObj).GetInstanceGuid();
-        Type ebxType = ebxObj.GetType();
-
-        WriteInstanceStart(guid,
-            $"{ebxType.Namespace}.{ebxType.GetName()}");
-
-        if (ebxType.IsClass)
-        {
-            WriteDbxClass(ebxType, ebxObj);
-        }
-        else
-        {
-            throw new NotImplementedException("DbxWriter: instance isn't a class?");
-        }
-
-        WriteInstanceEnd();
-    }
-
-    #endregion
-
-    #region Field Writing
-
-    /// <summary>
-    /// Casts an EBX field to the requested type. Checks for IPrimitive types.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <returns></returns>
-    private static T GetFieldValue<T>(object obj)
-    {
-        if (obj is not IPrimitive primitive)
-        {
-            return (T)obj;
-        }
-        return (T)primitive.ToActualType();
-    }
-
-    private void WriteField(TypeEnum fieldType,
-        object obj,
-        Type objType,
-        Type? arrayBaseType,
-        string? fieldName = null,
-        bool isArrayItem = false,
-        bool isTransient = false,
-        bool isHidden = false)
-    {
-        switch (fieldType)
-        {
-            case TypeEnum.Boolean:
-                WriteFieldWithValue(fieldName, GetFieldValue<bool>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Int8:
-                WriteFieldWithValue(fieldName, GetFieldValue<sbyte>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Int16:
-                WriteFieldWithValue(fieldName, GetFieldValue<short>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Int32:
-                WriteFieldWithValue(fieldName, GetFieldValue<int>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Int64:
-                WriteFieldWithValue(fieldName, GetFieldValue<long>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.UInt8:
-                WriteFieldWithValue(fieldName, GetFieldValue<byte>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.UInt16:
-                WriteFieldWithValue(fieldName, GetFieldValue<ushort>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.UInt32:
-                WriteFieldWithValue(fieldName, GetFieldValue<uint>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.UInt64:
-                WriteFieldWithValue(fieldName, GetFieldValue<ulong>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Float32:
-                WriteFieldWithValue(fieldName, GetFieldValue<float>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Float64:
-                WriteFieldWithValue(fieldName, GetFieldValue<double>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.CString:
-            case TypeEnum.String:
-                WriteFieldWithValue(fieldName, GetFieldValue<string>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Guid:
-                WriteFieldWithValue(fieldName, GetFieldValue<Guid>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Enum:
-                WriteFieldWithValue(fieldName, Enum.GetName(objType, GetFieldValue<object>(obj))!, isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.ResourceRef:
-                WriteFieldWithValue(fieldName, GetFieldValue<ResourceRef>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Sha1:
-                WriteFieldWithValue(fieldName, GetFieldValue<Sha1>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Class:
-                WriteFieldWithValue(fieldName, (PointerRef)obj, isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.Array:
-                WriteArray(fieldName, obj, objType, arrayBaseType);
-                break;
-            case TypeEnum.Struct:
-                WriteStruct(fieldName, obj, objType, isArrayItem);
-                break;
-            case TypeEnum.FileRef:
-                WriteFieldWithValue(fieldName, GetFieldValue<FileRef>(obj), isArrayItem, isTransient, isHidden);
-                break;
-            case TypeEnum.TypeRef:
-                WriteTypeRef(fieldName!, GetFieldValue<TypeRef>(obj));
-                break;
-            case TypeEnum.Delegate:
-                WriteDelegate(fieldName!, (IDelegate)obj);
-                break;
-            case TypeEnum.BoxedValueRef:
-                WriteBoxedValueRef(fieldName!, GetFieldValue<BoxedValueRef>(obj));
-                break;
-            default:
-                throw new NotImplementedException($"DbxWriter: unimplemented field type {fieldType}");
-        }
-    }
-    private void WriteFieldStart(string name, bool isArrayField, bool isTransient, bool isHidden)
-    {
-        m_xmlWriter!.WriteStartElement(isArrayField ? "item" : "field");
-        if (!isArrayField)
-        {
-            m_xmlWriter.WriteAttributeString("name", name);
-        }
-        if (isTransient)
-        {
-            m_xmlWriter.WriteAttributeString("transient", isTransient.ToString());
-        }
-        if (isHidden)
-        {
-            m_xmlWriter.WriteAttributeString("hidden", isHidden.ToString());
-        }
-    }
-
-    private void WriteFieldEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    #endregion
-
-    #region Field Value Writing
-
-    private void WriteFieldWithValue(string? fieldName, sbyte value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, short value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, int value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, long value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, byte value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, ushort value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, uint value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value);
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, ulong value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString());
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, ResourceRef value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(((ulong)value).ToString("X"));
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, Sha1 value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString());
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, float value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString("0.0######"));
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, double value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString("0.0##############"));
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, bool value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString());
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, string? value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        // temp? remove potential garbage from strings before writing them
-        m_xmlWriter!.WriteValue(value?.Replace("\v", string.Empty));
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, Guid value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        m_xmlWriter!.WriteValue(value.ToString("D"));
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    private void WriteFieldWithValue(string? fieldName, PointerRef value, bool isArrayField = false, bool isTransient = false, bool isHidden = false)
-    {
-        if (fieldName is not null)
-        {
-            WriteFieldStart(fieldName, isArrayField, isTransient, isHidden);
-        }
-
-        if (value.Type == PointerRefType.Internal)
-        {
-            AssetClassGuid classGuid = ((dynamic)value.Internal!).GetInstanceGuid();
-            m_xmlWriter!.WriteAttributeString("ref", classGuid.ToString());
-        }
-        else if (value.Type == PointerRefType.External)
-        {
-            EbxAssetEntry? entry = AssetManager.GetEbxAssetEntry(value.External.PartitionGuid);
-            if (entry is not null)
-            {
-                m_xmlWriter!.WriteAttributeString("ref", $"{entry.Name}\\{value.External.InstanceGuid}");
-                m_xmlWriter.WriteAttributeString("partitionGuid", entry.Guid.ToString());
-            }
-            else
-            {
-                m_xmlWriter!.WriteAttributeString("ref", "null");
-                m_xmlWriter.WriteAttributeString("partitionGuid", "null");
-            }
-        }
-        else
-        {
-            m_xmlWriter!.WriteAttributeString("ref", "null");
-        }
-
-        if (fieldName is not null)
-        {
-            WriteFieldEnd();
-        }
-    }
-
-    #endregion
-
-    #region Array Writing
-    private void WriteArray(string? arrayName, object arrayObj, Type arrayType, Type? arrayBaseType)
-    {
-        bool isRef = arrayType.GenericTypeArguments[0].Name == "PointerRef";
-
-        Type memberType = isRef ? arrayBaseType! : arrayType.GenericTypeArguments[0];
-        EbxTypeMetaAttribute memberMeta = memberType.GetCustomAttribute<EbxTypeMetaAttribute>()!;
-
-        string typeDisplayName = memberType.GetName();
-
-        WriteArrayStart(arrayName, isRef ? $"ref({typeDisplayName})" : typeDisplayName);
-
-        IList list = (IList)arrayObj;
-
-        int count = list.Count;
-
-        for (int i = 0; i < count; i++)
-        {
-            object subValue = list[i]!;
-            WriteField(memberMeta.Flags.GetTypeEnum(), subValue, subValue.GetType(), null, string.Empty, true);
-        }
-
-        WriteArrayEnd();
-    }
-
-    private void WriteArrayStart(string? name, string? memberType = null)
-    {
-        m_xmlWriter!.WriteStartElement("array");
-        if (name is not null)
-        {
-            m_xmlWriter.WriteAttributeString("name", name);
-        }
-
-        if (memberType is not null)
-        {
-            m_xmlWriter.WriteAttributeString("type", memberType);
-        }
-    }
-
-    private void WriteArrayEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    #endregion
-
-    #region Struct (Complex) Writing
-
-    private void WriteStruct(string? structName,
-        object structObj,
-        Type structType,
-        bool isArrayItem = false)
-    {
-        WriteStructStart(structName, isArrayItem ? null : structObj.GetType().GetName());
-
-        List<PropertyInfo> structProperties = new();
-        GetAllProperties(structType, ref structProperties);
-
-        foreach (PropertyInfo pi in structProperties)
-        {
-            EbxFieldMetaAttribute? fieldMeta = pi.GetCustomAttribute<EbxFieldMetaAttribute>();
-            WriteField(fieldMeta!.Flags.GetTypeEnum(),
-                pi.GetValue(structObj)!,
-                pi.PropertyType,
-                fieldMeta.BaseType,
-                pi.Name,
-                false,
-                pi.GetCustomAttribute<IsTransientAttribute>() is not null,
-                pi.GetCustomAttribute<IsHiddenAttribute>() is not null);
-        }
-
-        WriteStructEnd();
-    }
-
-    private void WriteStructStart(string? name = null, string? type = null)
-    {
-        m_xmlWriter!.WriteStartElement("complex");
-        if (type is not null)
-        {
-            m_xmlWriter.WriteAttributeString("type", type);
-
-            if (name is not null)
-            {
-                m_xmlWriter.WriteAttributeString("name", name);
-            }
-        }
-    }
-
-    private void WriteStructEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    #endregion
-
-    #region BoxedValueRef Writing
-
-    private void WriteBoxedValueRefStart(string name, string? valueType)
-    {
-        m_xmlWriter!.WriteStartElement("boxed");
-        m_xmlWriter.WriteAttributeString("name", name);
-        if (valueType is not null)
-        {
-            m_xmlWriter.WriteAttributeString("typeName", valueType);
-        }
-    }
-
-    private void WriteBoxedValueRefEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    private void WriteBoxedValueRef(string name, BoxedValueRef boxedValue)
-    {
-        WriteBoxedValueRefStart(name, boxedValue.Value?.GetType().GetName());
-        if (boxedValue.Value is not null)
-        {
-            TypeEnum type = boxedValue.Type;
-            if (boxedValue.Category == CategoryEnum.Array)
-            {
-                // riff ebx stores array in category
-                type = TypeEnum.Array;
-            }
-            WriteField(type, boxedValue.Value, boxedValue.Value.GetType(), null);
-        }
-        WriteBoxedValueRefEnd();
-    }
-
-    #endregion
-
-    #region TypeRef Writing
-
-    private void WriteTypeRefStart(string name)
-    {
-        m_xmlWriter!.WriteStartElement("typeref");
-        m_xmlWriter.WriteAttributeString("name", name);
-    }
-
-    private void WriteTypeRefEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    private void WriteTypeRef(string name, TypeRef typeRef)
-    {
-        WriteTypeRefStart(name);
-        if (typeRef.Name is not null)
-        {
-            m_xmlWriter!.WriteAttributeString("typeName", typeRef.Name);
-        }
-
-        WriteTypeRefEnd();
-    }
-
-    #endregion
-
-    #region Delegate Writing
-
-    private void WriteDelegateStart(string name)
-    {
-        m_xmlWriter!.WriteStartElement("delegate");
-        m_xmlWriter.WriteAttributeString("name", name);
-    }
-
-    private void WriteDelegateEnd()
-    {
-        m_xmlWriter!.WriteEndElement();
-    }
-
-    private void WriteDelegate(string name, IDelegate @delegate)
-    {
-        WriteDelegateStart(name);
-        if (@delegate.FunctionType is not null)
-        {
-            m_xmlWriter!.WriteAttributeString("typeName", @delegate.FunctionType.Name);
-        }
-
-        WriteDelegateEnd();
-    }
-
-    #endregion
-
-    private void WriteAsset(EbxPartition inPartition)
-    {
-#if FROSTY_DEVELOPER
-        //Stopwatch w = new();
-        //w.Start();
-#endif
-        m_xmlWriter!.WriteStartDocument();
-
-        WritePartitionStart(inPartition.PartitionGuid, inPartition.PrimaryInstanceGuid);
-
-        foreach (object ebxObj in inPartition.instances)
-        {
-            WriteInstance(ebxObj);
-        }
-
-        WritePartitionEnd();
-#if FROSTY_DEVELOPER
-        //w.Stop();
-        //Console.WriteLine($"Finished writing {m_filePath} in {w.ElapsedMilliseconds} ms");
-#endif
-    }
-
-    /// <summary>
-    /// Writes all properties in the class and its base classes as fields.
-    /// </summary>
-    /// <param name="classType"></param>
-    /// <param name="classObj"></param>
-    private void WriteDbxClass(Type classType, object classObj)
-    {
-        List<PropertyInfo> classProperties = new();
-        GetAllProperties(classType, ref classProperties, true, true);
-
-        if (classProperties.Count == 0)
-        {
-            return;
-        }
-
-        foreach (PropertyInfo pi in classProperties)
-        {
-            EbxFieldMetaAttribute? fieldMeta = pi.GetCustomAttribute<EbxFieldMetaAttribute>();
-            WriteField(fieldMeta!.Flags.GetTypeEnum(),
-                pi.GetValue(classObj)!,
-                pi.PropertyType,
-                fieldMeta.BaseType,
-                pi.GetName(),
-                false,
-                pi.GetCustomAttribute<IsTransientAttribute>() is not null,
-                pi.GetCustomAttribute<IsHiddenAttribute>() is not null);
-        }
-    }
-
-    /// <summary>
-    /// Gets all properties of the given type.
-    /// </summary>
-    /// <param name="classType">Type to get properties from.</param>
-    /// <param name="properties">List of PropertyInfo to add the properties to.</param>
-    /// <param name="checkBaseTypes">If true, recursively gathers all properties from this type and any of it's base types.</param>
-    /// <param name="shouldSort">If true, properties will be sorted by the index stored in their FieldIndexAttribute. If the property doesn't have this attribute, it's index will default to -1.</param>
-    private void GetAllProperties(Type classType, ref List<PropertyInfo> properties, bool checkBaseTypes = false, bool shouldSort = false)
+    private static void GetAllProperties(Type classType, ref List<PropertyInfo> properties, bool checkBaseTypes = false, bool shouldSort = false)
     {
         PropertyInfo[] currentTypeProps = classType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
         foreach (PropertyInfo pi in currentTypeProps)
         {
-            if (pi.Name.Equals(s_instanceGuidName) || pi.Name.Equals(s_instanceIdName))
+            if (pi.Name.Equals("__InstanceGuid") || pi.Name.Equals("__Id"))
             {
                 continue;
             }
@@ -797,5 +119,272 @@ public sealed class DbxWriter : IDisposable
                 return index1.CompareTo(index2);
             });
         }
+    }
+}
+
+public enum DbxFormat
+{
+    Xml,
+    Yaml
+}
+
+public sealed class DbxWriter : IDisposable
+{
+    private string m_filePath;
+    private IDbxDataWriter? m_dataWriter;
+
+    public DbxWriter()
+    {
+        m_filePath = string.Empty;
+    }
+
+    public DbxWriter(string inFilePath)
+    {
+        m_filePath = inFilePath;
+        m_dataWriter = new DbxYamlWriter(inFilePath);
+    }
+
+    public DbxWriter(Stream inStream)
+    {
+        m_filePath = string.Empty;
+        m_dataWriter = new DbxYamlWriter(inStream);
+    }
+
+    public void Write(EbxPartition inPartition)
+    {
+        if (!inPartition.IsValid)
+        {
+            return;
+        }
+
+        WriteAsset(inPartition);
+    }
+
+    public void Write(EbxPartition inPartition, string inFilePath)
+    {
+        if(!inPartition.IsValid)
+        {
+            return;
+        }
+
+        m_dataWriter?.Close();
+        m_dataWriter?.Create(inFilePath);
+
+        m_filePath = inFilePath;
+
+        WriteAsset(inPartition);
+    }
+
+    public void Dispose()
+    {
+        m_dataWriter?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Writes the given ebx object to the dbx as an instance.
+    /// </summary>
+    /// <param name="ebxObj"></param>
+    private void WriteInstance(object ebxObj)
+    {
+        Debug.Assert(ebxObj.GetType().IsClass, "DbxWriter: instance isn't a class?");
+
+        AssetClassGuid guid = ((dynamic)ebxObj).GetInstanceGuid();
+        Type ebxType = ebxObj.GetType();
+
+        m_dataWriter!.BeginInstance(guid, $"{ebxType.Namespace}.{ebxType.GetName()}");
+
+        foreach (var ebxField in DbxTypeCache.GetMembers(ebxObj))
+        {
+            object? fieldValue = ebxField.GetValue(ebxObj);
+            if (fieldValue is null)
+            {
+                continue;
+            }
+
+            WriteValue(ebxField, fieldValue, false);
+        }
+
+        m_dataWriter.EndInstance();
+    }
+
+    private void WriteValue(EbxField ebxField, object obj, bool isArrayElement)
+    {
+        if(obj is ICollection collection)
+        {
+            WriteArray(ebxField, obj);
+        }
+        else
+        {
+            WriteValue(ebxField.Name, ebxField.FieldType, obj, isArrayElement);
+        }
+    }
+
+    private void WriteValue(string? name, TypeEnum fieldType, object obj, bool isArrayElement)
+    {
+        switch (fieldType)
+        {
+            case TypeEnum.Boolean:
+            case TypeEnum.Int8:
+            case TypeEnum.UInt8:
+            case TypeEnum.Int16:
+            case TypeEnum.UInt16:
+            case TypeEnum.Int32:
+            case TypeEnum.UInt32:
+            case TypeEnum.Int64:
+            case TypeEnum.UInt64:
+            case TypeEnum.Float32:
+            case TypeEnum.Float64:
+            case TypeEnum.CString:
+            case TypeEnum.String:
+            case TypeEnum.Guid:
+            case TypeEnum.ResourceRef:
+            case TypeEnum.Sha1:
+            case TypeEnum.FileRef:
+                WritePrimitive(name, obj, isArrayElement);
+                break;
+            case TypeEnum.Enum:
+                WriteEnum(name, (Enum)obj, isArrayElement);
+                break;
+            case TypeEnum.Class:
+                WriteClassRef(name, (PointerRef)obj, isArrayElement);
+                break;
+            case TypeEnum.Struct:
+                WriteValueType(name, obj);
+                break;
+            case TypeEnum.TypeRef:
+                WriteTypeRef(name, (TypeRef)obj, isArrayElement);
+                break;
+            case TypeEnum.Delegate:
+                WriteDelegate(name, (IDelegate)obj, isArrayElement);
+                break;
+            case TypeEnum.BoxedValueRef:
+                WriteBoxedValueRef(name, (BoxedValueRef)obj, isArrayElement);
+                break;
+            default:
+                throw new NotImplementedException($"DbxWriter: unimplemented field type {fieldType}");
+        }
+    }
+
+    private void WriteDelegate(string? name, IDelegate value, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+        m_dataWriter.WriteAttribute("function", value.FunctionType?.Name ?? "null");
+        m_dataWriter.EndValue();
+    }
+
+    private void WriteClassRef(string? name, PointerRef value, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+        if (value.Type == PointerRefType.Internal)
+        {
+            AssetClassGuid classGuid = value.Internal!.GetInstanceGuid();
+            m_dataWriter!.WriteRef(classGuid.ToString(), null);
+        }
+        else if (value.Type == PointerRefType.External)
+        {
+            EbxAssetEntry? entry = AssetManager.GetEbxAssetEntry(value.External.PartitionGuid);
+            if (entry is not null)
+            {
+                m_dataWriter!.WriteRef($"{entry.Name}/{value.External.InstanceGuid}", entry.Guid.ToString());
+            }
+            else
+            {
+                m_dataWriter!.WriteRef("null", "null");
+            }
+        }
+        else
+        {
+            m_dataWriter!.WriteRef("null", null);
+        }
+        m_dataWriter.EndValue();
+    }
+
+    private void WriteTypeRef(string? name, TypeRef typeRef, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+        m_dataWriter.WriteAttribute("typeName", typeRef.Name ?? string.Empty);
+        m_dataWriter.EndValue();
+    }
+
+    private void WriteBoxedValueRef(string? name, BoxedValueRef boxedValue, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+        if(boxedValue.Value is not null)
+        {
+            TypeEnum type = boxedValue.Type;
+            if(boxedValue.Category is CategoryEnum.Array)
+            {
+                type = TypeEnum.Array;
+            }
+
+            WriteValue(name, type, boxedValue.Value, false);
+        }
+        m_dataWriter.EndValue();
+    }
+
+    private void WriteValueType(string? name, object value)
+    {
+        m_dataWriter!.BeginValueType(name);
+        foreach(var ebxField in DbxTypeCache.GetMembers(value))
+        {
+            WriteValue(ebxField, ebxField.GetValue(value)!, false);
+        }
+        m_dataWriter.EndValueType();
+    }
+
+    private void WriteArray(EbxField ebxField, object arrayObj)
+    {
+        Type memberType = ebxField.Type.GenericTypeArguments[0];
+        bool isRef = memberType.Name == "PointerRef";
+
+        if (isRef)
+        {
+            memberType = ebxField.Meta.BaseType!;
+        }
+
+        EbxTypeMetaAttribute memberMeta = memberType.GetCustomAttribute<EbxTypeMetaAttribute>()!;
+
+        string typeDisplayName = memberType.GetName();
+
+        ICollection elements = (ICollection)arrayObj;
+
+        m_dataWriter!.BeginArray(ebxField.Name);
+        foreach(object elem in elements)
+        {
+            WriteValue(null, memberMeta.Flags.GetTypeEnum(), elem, true);
+        }
+        m_dataWriter.EndArray();
+    }
+
+    private void WriteEnum(string? name, Enum value, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+        m_dataWriter.WriteString(value.ToString());
+        m_dataWriter.EndValue();
+    }
+
+    private void WritePrimitive(string? name, object value, bool isArrayElement)
+    {
+        m_dataWriter!.BeginValue(name, isArrayElement);
+
+        object actualVal = value is IPrimitive prim ? prim.ToActualType() : value;
+
+        m_dataWriter.WritePrimitive(actualVal);
+        m_dataWriter.EndValue();
+    }
+
+    private void WriteAsset(EbxPartition inPartition)
+    {
+        m_dataWriter!.BeginDocument();
+
+        m_dataWriter.BeginPartition(inPartition.PartitionGuid, inPartition.PrimaryInstanceGuid);
+
+        foreach (object ebxObj in inPartition.instances)
+        {
+            WriteInstance(ebxObj);
+        }
+
+        m_dataWriter.EndPartition();
     }
 }

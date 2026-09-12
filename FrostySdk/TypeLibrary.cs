@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -50,21 +50,23 @@ public static class TypeLibrary
                 continue;
             }
 
-            s_nameMapping.Add(type.GetName(), s_types.Count);
+            var sdkType = new SdkType(type);
 
-            uint nameHash = type.GetNameHash();
+            s_nameMapping.Add(sdkType.Name, s_types.Count);
+
+            uint nameHash = sdkType.NameHash;
             if (nameHash != uint.MaxValue)
             {
                 s_nameHashMapping.Add(nameHash, s_types.Count);
             }
 
-            Guid guid = type.GetGuid();
+            Guid guid = sdkType.Guid;
             if (guid != Guid.Empty)
             {
                 s_guidMapping.Add(guid, s_types.Count);
             }
 
-            s_types.Add(new SdkType(type));
+            s_types.Add(sdkType);
 
             bool addArray = false;
             string? arrayName = type.GetCustomAttribute<ArrayNameAttribute>()?.Name;
@@ -197,6 +199,11 @@ public static class TypeLibrary
 
     public static string GetName(this MemberInfo type)
     {
+        if (s_nameMapping.TryGetValue(type.Name, out int typeIndex))
+        {
+            return s_types[typeIndex].Name;
+        }
+
         if (type.Name == "ObservableCollection`1")
         {
             Type elementType = (type as Type)!.GenericTypeArguments[0].Name == "PointerRef" ? GetType("DataContainer")!.Type : (type as Type)!.GenericTypeArguments[0];
@@ -208,17 +215,27 @@ public static class TypeLibrary
 
     public static Guid GetGuid(this MemberInfo type)
     {
+        if (s_nameMapping.TryGetValue(type.Name, out int typeIndex))
+        {
+            return s_types[typeIndex].Guid;
+        }
+
         if (type.Name == "ObservableCollection`1")
         {
             Type elementType = (type as Type)!.GenericTypeArguments[0].Name == "PointerRef" ? GetType("DataContainer")!.Type : (type as Type)!.GenericTypeArguments[0];
 
-            return elementType.GetCustomAttribute<ArrayGuidAttribute>()?.Guid ??  Guid.Empty;
+            return elementType.GetCustomAttribute<ArrayGuidAttribute>()?.Guid ?? Guid.Empty;
         }
         return type.GetCustomAttribute<GuidAttribute>()?.Guid ?? Guid.Empty;
     }
 
     public static uint GetSignature(this MemberInfo type)
     {
+        if (s_nameMapping.TryGetValue(type.Name, out int typeIndex))
+        {
+            return s_types[typeIndex].Signature;
+        }
+
         if (type.Name == "ObservableCollection`1")
         {
             Type elementType = (type as Type)!.GenericTypeArguments[0].Name == "PointerRef" ? GetType("DataContainer")!.Type : (type as Type)!.GenericTypeArguments[0];
@@ -230,6 +247,11 @@ public static class TypeLibrary
 
     public static uint GetNameHash(this MemberInfo type)
     {
+        if (s_nameMapping.TryGetValue(type.Name, out int typeIndex))
+        {
+            return s_types[typeIndex].NameHash;
+        }
+
         if (type.Name == "ObservableCollection`1")
         {
             Type elementType = (type as Type)!.GenericTypeArguments[0].Name == "PointerRef" ? GetType("DataContainer")!.Type : (type as Type)!.GenericTypeArguments[0];

@@ -56,19 +56,11 @@ public sealed class DbxReader
     public EbxPartition ReadAsset()
     {
         m_ebx = new EbxPartition();
-#if FROSTY_DEVELOPER
-        Stopwatch w = new();
-        w.Start();
-#endif
         XmlNode? rootNode = m_xml.DocumentElement;
 
         Debug.Assert(rootNode != null && rootNode.Name == "partition", "Invalid DBX (root element is not a partition)");
 
         ReadPartition(rootNode);
-#if FROSTY_DEVELOPER
-        w.Stop();
-        Console.WriteLine($"Dbx {m_filepath} read in {w.ElapsedMilliseconds} ms");
-#endif
         return m_ebx!;
     }
 

@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UseWpf>true</UseWpf>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FrostyControls\FrostyControls.csproj" />
+      <ProjectReference Include="..\FrostySdk\FrostySdk.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Controls\Editors\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="System.Drawing.Common" Version="11.0.0-rc.1.26425.128" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Images\Add.png" />
+      <Resource Include="Images\Add.png" />
+      <None Remove="Images\Clear.png" />
+      <Resource Include="Images\Clear.png" />
+      <None Remove="Images\Copy.png" />
+      <Resource Include="Images\Copy.png" />
+      <None Remove="Images\Cross.png" />
+      <Resource Include="Images\Cross.png" />
+      <None Remove="Images\Paste.png" />
+      <Resource Include="Images\Paste.png" />
+      <None Remove="Images\Rename.png" />
+      <Resource Include="Images\Rename.png" />
+      <None Remove="Images\Settings.png" />
+      <Resource Include="Images\Settings.png" />
+      <None Remove="Images\Tick.png" />
+      <Resource Include="Images\Tick.png" />
+      <None Remove="Images\Warning.png" />
+      <Resource Include="Images\Warning.png" />
+      <None Remove="Images\Assets\ArchiveFileType.png" />
+      <Resource Include="Images\Assets\ArchiveFileType.png" />
+      <None Remove="Images\Assets\BlankFileType.png" />
+      <Resource Include="Images\Assets\BlankFileType.png" />
+      <None Remove="Images\Assets\BlueprintBundleFileType.png" />
+      <Resource Include="Images\Assets\BlueprintBundleFileType.png" />
+      <None Remove="Images\Assets\BlueprintFileType.png" />
+      <Resource Include="Images\Assets\BlueprintFileType.png" />
+      <None Remove="Images\Assets\EmitterFileType.png" />
+      <Resource Include="Images\Assets\EmitterFileType.png" />
+      <None Remove="Images\Assets\EncryptedFileType.png" />
+      <Resource Include="Images\Assets\EncryptedFileType.png" />
+      <None Remove="Images\Assets\HavokFileType.png" />
+      <Resource Include="Images\Assets\HavokFileType.png" />
+      <None Remove="Images\Assets\ImageFileType.png" />
+      <Resource Include="Images\Assets\ImageFileType.png" />
+      <None Remove="Images\Assets\InternalFileType.png" />
+      <Resource Include="Images\Assets\InternalFileType.png" />
+      <None Remove="Images\Assets\LogicPrefabFileType.png" />
+      <Resource Include="Images\Assets\LogicPrefabFileType.png" />
+      <None Remove="Images\Assets\MovieTextureFileType.png" />
+      <Resource Include="Images\Assets\MovieTextureFileType.png" />
+      <None Remove="Images\Assets\ObjectVariationFileType.png" />
+      <Resource Include="Images\Assets\ObjectVariationFileType.png" />
+      <None Remove="Images\Assets\ShaderFileType.png" />
+      <Resource Include="Images\Assets\ShaderFileType.png" />
+      <None Remove="Images\Assets\ShaderPresetFileType.png" />
+      <Resource Include="Images\Assets\ShaderPresetFileType.png" />
+      <None Remove="Images\Assets\SkeletonFileType.png" />
+      <Resource Include="Images\Assets\SkeletonFileType.png" />
+      <None Remove="Images\Assets\SoundFileType.png" />
+      <Resource Include="Images\Assets\SoundFileType.png" />
+      <None Remove="Images\Assets\SpreadsheetFileType.png" />
+      <Resource Include="Images\Assets\SpreadsheetFileType.png" />
+      <None Remove="Images\Assets\StatFileType.png" />
+      <Resource Include="Images\Assets\StatFileType.png" />
+      <None Remove="Images\Assets\SubWorldFileType.png" />
+      <Resource Include="Images\Assets\SubWorldFileType.png" />
+    </ItemGroup>
+
+</Project>

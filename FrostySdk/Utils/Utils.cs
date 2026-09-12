@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Frosty.Sdk.Ebx;
+using Frosty.Sdk.Interfaces;
 using Frosty.Sdk.IO;
 
 namespace Frosty.Sdk.Utils;
@@ -40,7 +41,7 @@ public static class Utils
         return (int)hash;
     }
 
-    public static Guid GenerateDeterministicGuid(IEnumerable<object> objects, Guid fileGuid)
+    public static Guid GenerateDeterministicGuid(IEnumerable<IEbxInstance> objects, Guid fileGuid)
     {
         Guid outGuid;
 
