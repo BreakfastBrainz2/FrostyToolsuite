@@ -17,8 +17,8 @@ public class FrostyHightlightTextBlock : TextBlock
         set => SetValue(HighlightTextProperty, value);
     }
 
-    private static readonly SolidColorBrush HighlightBackgroundColor = new SolidColorBrush(Color.FromArgb(0xff, 12, 60, 98));
-    private static readonly SolidColorBrush HighlightForegroundColor = new SolidColorBrush(Color.FromArgb(0xff, 149, 197, 235));
+    private static readonly SolidColorBrush HighlightBackgroundColor = new(Color.FromArgb(0xff, 12, 60, 98));
+    private static readonly SolidColorBrush HighlightForegroundColor = new(Color.FromArgb(0xff, 149, 197, 235));
 
     private static void OnDataChanged(DependencyObject source,
         DependencyPropertyChangedEventArgs e)

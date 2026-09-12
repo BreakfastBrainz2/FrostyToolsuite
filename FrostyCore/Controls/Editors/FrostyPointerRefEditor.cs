@@ -402,7 +402,7 @@ public class FrostyPointerRefControl : Control
             FrostyAssetEditor editor = GetParentEditor();
             AssetClassGuid guid = ((dynamic)assignObjs[index]).GetInstanceGuid();
 
-            EbxImportReference reference = new EbxImportReference()
+            EbxImportReference reference = new()
             {
                 PartitionGuid = assignFileGuid,
                 InstanceGuid = guid.ExportedGuid
@@ -559,7 +559,7 @@ public class FrostyPointerRefControl : Control
         TextBlock tb = GetTemplateChild("PART_RefName") as TextBlock;
         Image img = GetTemplateChild("PART_TypeImage") as Image;
 
-        tb.GetBindingExpression(TextBlock.ToolTipProperty).UpdateTarget();
+        tb.GetBindingExpression(ToolTipProperty).UpdateTarget();
         BindingOperations.GetBindingExpression(img, Image.SourceProperty).UpdateTarget();
     }
 

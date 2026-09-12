@@ -176,14 +176,14 @@ public class FrostyClassNameConverter : IValueConverter
 
 public class AttributeList
 {
-    private List<Attribute> attributes = new List<Attribute>();
+    private List<Attribute> attributes = new();
     public void AddRange(IEnumerable<Attribute> inAttrs)
     {
         attributes.AddRange(inAttrs);
     }
     public void AddRangeAndReplace(IEnumerable<Attribute> inAttrs)
     {
-        List<Attribute> tmpList = new List<Attribute>();
+        List<Attribute> tmpList = new();
         foreach (var attr in inAttrs)
         {
             if (attr is EbxFieldMetaAttribute)
@@ -446,8 +446,8 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
     public IValueBinding Binding { get; set; }
     public bool IsArrayChild => Parent?.Value is IList;
     public bool IsPointerRef => Value is PointerRef;
-    public List<EditorMetaDataAttribute> MetaData { get; private set; } = new List<EditorMetaDataAttribute>();
-    public List<Attribute> Attributes { get; private set; } = new List<Attribute>();
+    public List<EditorMetaDataAttribute> MetaData { get; private set; } = new();
+    public List<Attribute> Attributes { get; private set; } = new();
     public FrostyPropertyGridItemFlags Flags => _flags;
     public bool HasItems
     {
@@ -530,7 +530,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
         Parent = parent;
 
         Type valueType = value.GetType();
-        AttributeList attributes = new AttributeList();
+        AttributeList attributes = new();
         attributes.AddRange(valueType.GetCustomAttributes());
 
         /*Type overrideType = App.PluginManager.GetTypeOverride(valueType.Name);
@@ -649,7 +649,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
         IList list = (IList)_value;
         int index = list.Count;
 
-        ItemPreModifiedEventArgs args = new ItemPreModifiedEventArgs(this, null, value);
+        ItemPreModifiedEventArgs args = new(this, null, value);
         OnPreModified(this, args);
         if (args.Ignore)
             return;
@@ -658,7 +658,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
 
         if (_children != null)
         {
-            FrostyPropertyGridItemData newItem = new FrostyPropertyGridItemData("[" + index + "]", "[" + index + "]", value, defValue, this, Flags) {Binding = new ArrayItemValueBinding(list, index)};
+            FrostyPropertyGridItemData newItem = new("[" + index + "]", "[" + index + "]", value, defValue, this, Flags) {Binding = new ArrayItemValueBinding(list, index)};
             newItem.Attributes.AddRange(Attributes);
 
             _children.Add(newItem);
@@ -679,7 +679,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
         ArrayItemValueBinding binding = (ArrayItemValueBinding)insertLocation.Binding;
         int index = binding.index + Math.Max(insertDir, 0);
 
-        ItemPreModifiedEventArgs args = new ItemPreModifiedEventArgs(this, null, value);
+        ItemPreModifiedEventArgs args = new(this, null, value);
         OnPreModified(this, args);
         if (args.Ignore)
             return;
@@ -691,7 +691,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
 
         if (_children != null)
         {
-            FrostyPropertyGridItemData newItem = new FrostyPropertyGridItemData("[" + index + "]", "[" + index + "]", value, defValue, this, Flags) {Binding = new ArrayItemValueBinding(list, index)};
+            FrostyPropertyGridItemData newItem = new("[" + index + "]", "[" + index + "]", value, defValue, this, Flags) {Binding = new ArrayItemValueBinding(list, index)};
             newItem.Attributes.AddRange(Attributes);
 
             if (index > _children.Count)
@@ -724,7 +724,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
         IList list = (IList)Value;
         object oldItem = item.Value;
 
-        ItemPreModifiedEventArgs args = new ItemPreModifiedEventArgs(this, oldItem, null);
+        ItemPreModifiedEventArgs args = new(this, oldItem, null);
         OnPreModified(this, args);
         if (args.Ignore)
             return;
@@ -762,7 +762,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
             return;
 
         int oldCount = list.Count;
-        ItemPreModifiedEventArgs args = new ItemPreModifiedEventArgs(this, oldCount, 0);
+        ItemPreModifiedEventArgs args = new(this, oldCount, 0);
         OnPreModified(this, args);
         if (args.Ignore)
             return;
@@ -806,7 +806,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
 
     public void ForceValue(object value)
     {
-        ItemPreModifiedEventArgs args = new ItemPreModifiedEventArgs(this, _value, value);
+        ItemPreModifiedEventArgs args = new(this, _value, value);
         OnPreModified(this, args);
         if (args.Ignore)
             return;
@@ -910,7 +910,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
                     if (listValue != null)
                         listDefValue = Activator.CreateInstance(listValue.GetType());
 
-                    FrostyPropertyGridItemData listItem = new FrostyPropertyGridItemData("[" + i + "]", "[" + i + "]", listValue, listDefValue, this, _flags) {Binding = new ArrayItemValueBinding(list, i)};
+                    FrostyPropertyGridItemData listItem = new("[" + i + "]", "[" + i + "]", listValue, listDefValue, this, _flags) {Binding = new ArrayItemValueBinding(list, i)};
                     listItem.Attributes.AddRange(Attributes);
                     _children.Add(listItem);
                 }
@@ -980,10 +980,10 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
 
         Array.Sort(pis, new PropertyComparer());
 
-        List<FrostyPropertyGridItemData> items = new List<FrostyPropertyGridItemData>();
+        List<FrostyPropertyGridItemData> items = new();
         foreach (PropertyInfo pi in pis)
         {
-            AttributeList attributes = new AttributeList();
+            AttributeList attributes = new();
             attributes.AddRange(pi.GetCustomAttributes());
 
             /*if (overrideType != null)
@@ -1016,7 +1016,7 @@ public class FrostyPropertyGridItemData : INotifyPropertyChanged
             if (actualDefaultValue != null)
                 actualDefaultValue = pi.GetValue(actualDefaultValue);
 
-            FrostyPropertyGridItemData subItem = new FrostyPropertyGridItemData(name, pi.Name, pi.GetValue(actualObject), actualDefaultValue, parent, flags) { Binding = new PropertyValueBinding(pi, actualObject) };
+            FrostyPropertyGridItemData subItem = new(name, pi.Name, pi.GetValue(actualObject), actualDefaultValue, parent, flags) { Binding = new PropertyValueBinding(pi, actualObject) };
 
             if (attributes.GetCustomAttribute<Frosty.Sdk.Attributes.IsReadOnlyAttribute>() != null)
                 subItem.IsReadOnly = true;
@@ -1130,8 +1130,8 @@ public class FrostyPropertyGridItem : TreeViewItem
             value.Content = elem;
         }
 
-        ContextMenu cm = new ContextMenu();
-        MenuItem mi = new MenuItem
+        ContextMenu cm = new();
+        MenuItem mi = new()
         {
             Header = "Copy",
             Icon = new Image
@@ -1608,7 +1608,7 @@ public class FrostyPropertyGrid : Control
             return FrostyPropertyGridItemData.EmptyList;
 
         object defValue = Activator.CreateInstance(value.GetType());
-        SortedDictionary<string, FrostyPropertyGridItemData> categories = new SortedDictionary<string, FrostyPropertyGridItemData>();
+        SortedDictionary<string, FrostyPropertyGridItemData> categories = new();
 
         rootChild = new FrostyPropertyGridItemData("");
         rootChild.Modified += SubItem_Modified;
@@ -1641,7 +1641,7 @@ public class FrostyPropertyGrid : Control
 
         foreach (PropertyInfo pi in pis)
         {
-            AttributeList attributes = new AttributeList();
+            AttributeList attributes = new();
             attributes.AddRange(pi.GetCustomAttributes());
 
             /*if (overrideType != null)
@@ -1679,7 +1679,7 @@ public class FrostyPropertyGrid : Control
                 actualDefaultValue = typeOverrideDefaultValue;
             }*/
 
-            FrostyPropertyGridItemData subItem = new FrostyPropertyGridItemData(name, pi.Name, pi.GetValue(actualObject), pi.GetValue(actualDefaultValue), rootChild, flags) {Binding = new PropertyValueBinding(pi, actualObject)};
+            FrostyPropertyGridItemData subItem = new(name, pi.Name, pi.GetValue(actualObject), pi.GetValue(actualDefaultValue), rootChild, flags) {Binding = new PropertyValueBinding(pi, actualObject)};
 
             if (attributes.GetCustomAttribute<Frosty.Sdk.Attributes.IsReadOnlyAttribute>() != null)
                 subItem.IsReadOnly = true;

@@ -1,0 +1,155 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:editors="clr-namespace:Frosty.Core.Controls.Editors">
+  <Style TargetType="{x:Type editors:FrostyVectorControl}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type editors:FrostyVectorControl}">
+          <Grid Height="19">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*"
+                                x:Name="gridZ" />
+              <ColumnDefinition Width="*"
+                                x:Name="gridW" />
+            </Grid.ColumnDefinitions>
+
+            <DockPanel x:Name="blockX"
+                       Grid.Column="0"
+                       HorizontalAlignment="Stretch">
+              <Border Background="#802020"
+                      BorderThickness="1,1,0,1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBlock Text="{Binding Path=XLabel, RelativeSource={RelativeSource TemplatedParent}}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Margin="5,0,5,0"
+                           Foreground="{StaticResource FontColor}" />
+              </Border>
+              <Border BorderThickness="1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBox x:Name="PART_X"
+                         Text="{Binding Path=X, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center"
+                         Margin="3 0 0 0" />
+              </Border>
+            </DockPanel>
+
+            <DockPanel x:Name="blockY"
+                       Grid.Column="1"
+                       HorizontalAlignment="Stretch"
+                       Margin="1,0,0,0">
+              <Border Background="#208020"
+                      BorderThickness="1,1,0,1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBlock Text="{Binding Path=YLabel, RelativeSource={RelativeSource TemplatedParent}}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Margin="5,0,5,0"
+                           Foreground="{StaticResource FontColor}" />
+              </Border>
+              <Border BorderThickness="1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBox x:Name="PART_Y"
+                         Text="{Binding Path=Y, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center"
+                         Margin="3 0 0 0" />
+              </Border>
+            </DockPanel>
+
+            <DockPanel x:Name="blockZ"
+                       Grid.Column="2"
+                       HorizontalAlignment="Stretch"
+                       Margin="1,0,0,0">
+              <Border Background="#005080"
+                      BorderThickness="1,1,0,1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBlock Text="{Binding Path=ZLabel, RelativeSource={RelativeSource TemplatedParent}}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Margin="5,0,5,0"
+                           Foreground="{StaticResource FontColor}" />
+              </Border>
+              <Border BorderThickness="1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBox x:Name="PART_Z"
+                         Text="{Binding Path=Z, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center"
+                         Margin="3 0 0 0" />
+              </Border>
+            </DockPanel>
+
+            <DockPanel x:Name="blockW"
+                       Grid.Column="3"
+                       HorizontalAlignment="Stretch"
+                       Margin="1,0,0,0">
+              <Border Background="#808080"
+                      BorderThickness="1,1,0,1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBlock Text="{Binding Path=WLabel, RelativeSource={RelativeSource TemplatedParent}}"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Margin="5,0,5,0"
+                           Foreground="{StaticResource FontColor}" />
+              </Border>
+              <Border BorderThickness="1"
+                      BorderBrush="{StaticResource ControlBackground}">
+                <TextBox x:Name="PART_W"
+                         Text="{Binding Path=W, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center"
+                         Margin="3 0 0 0" />
+              </Border>
+            </DockPanel>
+
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ControlType"
+                     Value="Vec2">
+              <Setter Property="Visibility"
+                      TargetName="blockZ"
+                      Value="Collapsed" />
+              <Setter Property="Visibility"
+                      TargetName="blockW"
+                      Value="Collapsed" />
+              <Setter Property="Width"
+                      TargetName="gridZ"
+                      Value="0" />
+              <Setter Property="Width"
+                      TargetName="gridW"
+                      Value="0" />
+            </Trigger>
+            <Trigger Property="ControlType"
+                     Value="Vec3">
+              <Setter Property="Visibility"
+                      TargetName="blockW"
+                      Value="Collapsed" />
+              <Setter Property="Width"
+                      TargetName="gridW"
+                      Value="0" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="{x:Type editors:FrostyVec2Control}"
+         BasedOn="{StaticResource {x:Type editors:FrostyVectorControl}}">
+    <Setter Property="ControlType"
+            Value="Vec2" />
+  </Style>
+  <Style TargetType="{x:Type editors:FrostyVec3Control}"
+         BasedOn="{StaticResource {x:Type editors:FrostyVectorControl}}">
+    <Setter Property="ControlType"
+            Value="Vec3" />
+  </Style>
+  <Style TargetType="{x:Type editors:FrostyVec4Control}"
+         BasedOn="{StaticResource {x:Type editors:FrostyVectorControl}}">
+    <Setter Property="ControlType"
+            Value="Vec4" />
+  </Style>
+</ResourceDictionary>

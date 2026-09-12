@@ -1,0 +1,109 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ctrl="clr-namespace:Frosty.Controls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <!-- FrostyDockablePanel -->
+  <Style TargetType="{x:Type ctrl:FrostyDockablePanel}">
+    <Setter Property="TitleBarVisible"
+            Value="True" />
+    <Setter Property="BorderVisible"
+            Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ctrl:FrostyDockablePanel}">
+          <Grid>
+            <Border x:Name="border"
+                    Background="{StaticResource ControlBackground}">
+              <Grid x:Name="background"
+                    Background="{StaticResource WindowBackground}"
+                    Margin="2">
+                <Grid.RowDefinitions>
+                  <RowDefinition x:Name="titleBarHeight"
+                                 Height="22" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid x:Name="titleBar"
+                      Visibility="Visible"
+                      Height="22"
+                      VerticalAlignment="Top"
+                      Background="{StaticResource ControlBackground}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="89*" />
+                    <ColumnDefinition Width="10*" />
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0"
+                              Orientation="Horizontal"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Center"
+                              Margin="1,-2,0,0">
+                    <Image x:Name="icon"
+                           Source="{TemplateBinding Icon}"
+                           Width="16"
+                           Height="16" />
+                    <TextBlock x:Name="title"
+                               Text="{TemplateBinding Title}"
+                               Margin="5,0,0,0"
+                               Foreground="{StaticResource FontColor}" />
+                  </StackPanel>
+                  <Label x:Name="PART_DragLabel"
+                         Margin="0"
+                         Grid.ColumnSpan="2" />
+                  <StackPanel Grid.Column="1"
+                              Orientation="Horizontal"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              Margin="0,-2,1,0">
+                    <Button x:Name="closeButton"
+                            Width="16"
+                            Visibility="Collapsed">
+                      <Image Margin="-2"
+                             Source="/FrostyControls;component/Images/CloseWindow.png" />
+                    </Button>
+                  </StackPanel>
+                </Grid>
+                <Border Background="{StaticResource WindowBackground}"
+                        Grid.Row="1">
+                  <Grid>
+                    <ContentPresenter Content="{TemplateBinding Content}" />
+                  </Grid>
+                </Border>
+              </Grid>
+            </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="Icon"
+                     Value="{x:Null}">
+              <Setter Property="Visibility"
+                      TargetName="icon"
+                      Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="TitleBarVisible"
+                     Value="False">
+              <Setter Property="Visibility"
+                      TargetName="titleBar"
+                      Value="Collapsed" />
+              <Setter Property="Height"
+                      TargetName="titleBarHeight"
+                      Value="0" />
+            </Trigger>
+            <Trigger Property="CloseButtonVisible"
+                     Value="True">
+              <Setter Property="Visibility"
+                      TargetName="closeButton"
+                      Value="Visible" />
+            </Trigger>
+            <Trigger Property="BorderVisible"
+                     Value="False">
+              <Setter Property="Margin"
+                      TargetName="background"
+                      Value="0" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

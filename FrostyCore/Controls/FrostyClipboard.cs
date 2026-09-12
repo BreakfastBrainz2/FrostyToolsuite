@@ -29,7 +29,7 @@ public class FrostyClipboard : INotifyPropertyChanged
     public void SetData(object data)
     {
         Type dataType = data.GetType();
-        Dictionary<object, object> oldNewMapping = new Dictionary<object, object>();
+        Dictionary<object, object> oldNewMapping = new();
 
         Data = DeepCopyValue(data, null, null, ref oldNewMapping);
         RaisePropertyChanged("HasData");
@@ -40,13 +40,13 @@ public class FrostyClipboard : INotifyPropertyChanged
     }
     public object GetData(EbxPartition asset, EbxAssetEntry entry)
     {
-        Dictionary<object, object> oldNewMapping = new Dictionary<object, object>();
+        Dictionary<object, object> oldNewMapping = new();
         object copyOfData = DeepCopyValue(Data, asset, entry, ref oldNewMapping);
         return copyOfData;
     }
     public object GetData()
     {
-        Dictionary<object, object> oldNewMapping = new Dictionary<object, object>();
+        Dictionary<object, object> oldNewMapping = new();
         object copyOfData = DeepCopyValue(Data, null, null, ref oldNewMapping);
         return copyOfData;
     }

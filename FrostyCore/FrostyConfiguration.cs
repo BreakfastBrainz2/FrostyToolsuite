@@ -14,7 +14,7 @@ public class FrostyConfiguration
     public string GamePath { get; }
     public string GameDir { get; }
     public string GameName { get; }
-    public string ProfileName { get; }
+    public string ProfileKey { get; }
 
     public FrostyConfiguration()
     {
@@ -23,7 +23,7 @@ public class FrostyConfiguration
 
     public FrostyConfiguration(string profile) : this()
     {
-        ProfileName = profile;
+        ProfileKey = profile;
         GamePath = Config.Get<string>("GamePath", "", ConfigScope.Game, profile);
         GameDir = Path.GetDirectoryName(GamePath);
 

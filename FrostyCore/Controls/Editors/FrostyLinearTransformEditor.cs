@@ -70,7 +70,7 @@ public class LinearTransformConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         dynamic obj = value;
-        EditorLinearTransform trns = new EditorLinearTransform();
+        EditorLinearTransform trns = new();
 
         /*if (obj.Rotation.x >= float.MaxValue)
         {

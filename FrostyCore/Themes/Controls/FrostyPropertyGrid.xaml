@@ -1,0 +1,820 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Frosty.Core.Controls"
+                    xmlns:controls="clr-namespace:Frosty.Controls;assembly=FrostyControls">
+  <!-- Property Grid Item -->
+  <ControlTemplate x:Key="itemToggleButton"
+                   TargetType="{x:Type ToggleButton}">
+    <Border Background="Transparent"
+            Height="16"
+            Padding="5"
+            Width="16">
+      <Path x:Name="ExpandPath"
+            Fill="{DynamicResource ControlPressed}"
+            Stroke="{DynamicResource ControlPressed}">
+        <Path.Data>
+          <PathGeometry Figures="M0,0 L0,6 L6,0 z" />
+        </Path.Data>
+        <Path.RenderTransform>
+          <RotateTransform Angle="135"
+                           CenterY="3"
+                           CenterX="3" />
+        </Path.RenderTransform>
+      </Path>
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsChecked"
+               Value="True">
+        <Setter Property="RenderTransform"
+                TargetName="ExpandPath">
+          <Setter.Value>
+            <RotateTransform Angle="180"
+                             CenterY="3"
+                             CenterX="3" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <ControlTemplate x:Key="categoryToggleButton"
+                   TargetType="{x:Type ToggleButton}">
+    <Border Background="White"
+            Height="9"
+            Width="9"
+            BorderThickness="1"
+            BorderBrush="Black">
+      <Grid>
+        <Path x:Name="expanded"
+              Fill="Black"
+              Height="7"
+              Width="7"
+              Data="M1 4 L1 4 6 4 6 3 1 3" />
+        <Path x:Name="collapsed"
+              Fill="Black"
+              Height="7"
+              Width="7"
+              Data="M3 1 L3 1 3 6 4 6 4 1" />
+      </Grid>
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsChecked"
+               Value="True">
+        <Setter Property="Visibility"
+                TargetName="collapsed"
+                Value="Collapsed" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+  <Style x:Key="propertyGridTreeViewItem"
+         TargetType="{x:Type local:FrostyPropertyGridItem}">
+    <Style.Resources>
+      <Style TargetType="{x:Type TextBlock}">
+        <Setter Property="TextTrimming"
+                Value="CharacterEllipsis" />
+        <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+      </Style>
+      <Style TargetType="{x:Type CheckBox}">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type CheckBox}">
+              <Grid x:Name="templateRoot"
+                    Background="Transparent"
+                    SnapsToDevicePixels="True">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="checkBoxBorder"
+                        Width="13"
+                        Height="13"
+                        BorderBrush="#868686"
+                        BorderThickness="1"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        Margin="1"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                  <Grid x:Name="markGrid">
+                    <Path x:Name="optionMark"
+                          Width="12"
+                          Height="12"
+                          Fill="#fafafa"
+                          Data="M1 8 L1 8 2 6 5 8 7 1 10 3 6 10"
+                          Opacity="0" />
+                    <Rectangle x:Name="indeterminateMark"
+                               Fill="{StaticResource FontColor}"
+                               Margin="2"
+                               Opacity="0" />
+                  </Grid>
+                </Border>
+                <ContentPresenter x:Name="contentPresenter"
+                                  Grid.Column="1"
+                                  Focusable="False"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  Margin="{TemplateBinding Padding}"
+                                  RecognizesAccessKey="True"
+                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsChecked"
+                         Value="True">
+                  <Setter Property="Opacity"
+                          TargetName="optionMark"
+                          Value="1" />
+                  <Setter Property="Opacity"
+                          TargetName="indeterminateMark"
+                          Value="0" />
+                </Trigger>
+                <Trigger Property="IsChecked"
+                         Value="{x:Null}">
+                  <Setter Property="Opacity"
+                          TargetName="optionMark"
+                          Value="0" />
+                  <Setter Property="Opacity"
+                          TargetName="indeterminateMark"
+                          Value="1" />
+                </Trigger>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                  <Setter Property="Opacity"
+                          TargetName="checkBoxBorder"
+                          Value="0.5" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style TargetType="{x:Type TextBoxBase}">
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Background"
+                Value="{StaticResource WindowBackground}" />
+        <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="CaretBrush"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <Border x:Name="border"
+                      BorderBrush="{StaticResource ControlBackground}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      Background="{TemplateBinding Background}"
+                      SnapsToDevicePixels="True">
+                <Grid>
+                  <ScrollViewer x:Name="PART_ContentHost"
+                                Focusable="True"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden"
+                                Padding="0"
+                                Visibility="Hidden" />
+                  <TextBlock x:Name="PART_EllipsedText"
+                             Margin="2,0,0,0"
+                             VerticalAlignment="Center"
+                             Text="{Binding Path=Text, RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"
+                             TextTrimming="CharacterEllipsis"
+                             TextWrapping="NoWrap"
+                             Focusable="True"
+                             Cursor="IBeam" />
+                </Grid>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsKeyboardFocused"
+                         Value="True">
+                  <Setter Property="Visibility"
+                          TargetName="PART_ContentHost"
+                          Value="Visible" />
+                  <Setter Property="Visibility"
+                          TargetName="PART_EllipsedText"
+                          Value="Hidden" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style TargetType="{x:Type TextBox}"
+             BasedOn="{StaticResource {x:Type TextBoxBase}}">
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="Margin"
+                Value="-2 0" />
+        <Setter Property="CaretBrush"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="SelectionBrush"
+                Value="{StaticResource ControlBackground}" />
+        <Setter Property="SelectionOpacity"
+                Value="0.5" />
+      </Style>
+      <Style TargetType="{x:Type ComboBox}">
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+                Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+                Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll"
+                Value="True" />
+        <Setter Property="ScrollViewer.PanningMode"
+                Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled"
+                Value="False" />
+        <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Focusable"
+                Value="False" />
+        <Setter Property="Padding"
+                Value="0" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type ComboBox}">
+              <Border BorderBrush="#868686"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      Background="{StaticResource WindowBackground}">
+                <Grid x:Name="templateRoot"
+                      SnapsToDevicePixels="True">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="19" />
+                  </Grid.ColumnDefinitions>
+                  <Popup x:Name="PART_Popup"
+                         AllowsTransparency="true"
+                         Grid.ColumnSpan="2"
+                         IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                         Margin="1"
+                         PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
+                         Placement="Bottom"
+                         Focusable="False">
+                    <Border x:Name="dropDownBorder"
+                            Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                            MaxHeight="200">
+                      <ScrollViewer x:Name="DropDownScrollViewer">
+                        <Grid x:Name="grid"
+                              RenderOptions.ClearTypeHint="Enabled">
+                          <Canvas x:Name="canvas"
+                                  HorizontalAlignment="Left"
+                                  Height="0"
+                                  VerticalAlignment="Top"
+                                  Width="0">
+                            <Rectangle x:Name="opaqueRect"
+                                       Fill="{StaticResource ListBackground}"
+                                       Height="{Binding ActualHeight, ElementName=dropDownBorder}"
+                                       Width="{Binding ActualWidth, ElementName=dropDownBorder}" />
+                          </Canvas>
+                          <ItemsPresenter x:Name="ItemsPresenter"
+                                          KeyboardNavigation.DirectionalNavigation="Contained"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Grid>
+                      </ScrollViewer>
+                    </Border>
+                  </Popup>
+                  <ToggleButton x:Name="toggleButton"
+                                Grid.Column="1"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                VerticalAlignment="Stretch">
+                    <ToggleButton.Template>
+                      <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border x:Name="border"
+                                Background="{StaticResource ControlBackground}"
+                                Margin="1">
+                          <Path Width="17"
+                                Height="17"
+                                Fill="White"
+                                Data="M5 6 L5 6 13 6 9 11 Z" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsMouseOver"
+                                   Value="True">
+                            <Setter Property="Background"
+                                    TargetName="border"
+                                    Value="{StaticResource ControlHighlight}" />
+                          </Trigger>
+                          <Trigger Property="IsPressed"
+                                   Value="True">
+                            <Setter Property="Background"
+                                    TargetName="border"
+                                    Value="{StaticResource ControlPressed}" />
+                          </Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </ToggleButton.Template>
+                  </ToggleButton>
+
+                  <ContentPresenter x:Name="contentPresenter"
+                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                    Content="{TemplateBinding SelectionBoxItem}"
+                                    ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    IsHitTestVisible="false"
+                                    Margin="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Focusable="False" />
+
+                  <ToggleButton x:Name="invisToggleButton"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                Focusable="False">
+                    <ToggleButton.Template>
+                      <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Background="Transparent" />
+                      </ControlTemplate>
+                    </ToggleButton.Template>
+                  </ToggleButton>
+                </Grid>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style TargetType="{x:Type Button}">
+        <Setter Property="Foreground"
+                Value="{StaticResource FontColor}" />
+        <Setter Property="Background"
+                Value="{StaticResource ControlBackground}" />
+        <Setter Property="Padding"
+                Value="2" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <Border x:Name="buttonBorder"
+                      Background="{TemplateBinding Background}"
+                      BorderThickness="0">
+                <ContentPresenter x:Name="content"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Margin="{TemplateBinding Padding}" />
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                  <Setter TargetName="buttonBorder"
+                          Property="Background"
+                          Value="#FF707070" />
+                </Trigger>
+                <Trigger Property="IsPressed"
+                         Value="True">
+                  <Setter TargetName="buttonBorder"
+                          Property="Background"
+                          Value="#FF585858" />
+                </Trigger>
+                <Trigger Property="IsEnabled"
+                         Value="False">
+                  <Setter TargetName="content"
+                          Property="Opacity"
+                          Value="0.5" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </Style.Resources>
+    <Setter Property="IsExpanded"
+            Value="{Binding Path=IsExpanded}" />
+    <Setter Property="ItemsSource"
+            Value="{Binding Path=Children}" />
+    <Setter Property="IsTabStop"
+            Value="True" />
+    <Setter Property="Focusable"
+            Value="True" />
+    <Setter Property="KeyboardNavigation.IsTabStop"
+            Value="True" />
+    <Setter Property="KeyboardNavigation.TabNavigation"
+            Value="Continue" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FrostyPropertyGridItem}">
+          <ControlTemplate.Resources>
+            <local:FrostyItemValuePaddingIncreaser x:Key="FrostyArrayPaddingIncreaser" />
+            <local:FrostyArrayToVisibilityConverter x:Key="FrostyArrayToVisibilityConverter" />
+            <local:FrostyValueModifiedConverter x:Key="FrostyValueModifiedConverter" />
+          </ControlTemplate.Resources>
+          <Grid x:Name="mainGrid"
+                MinHeight="19"
+                Background="Transparent">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="19" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Standard -->
+            <Grid x:Name="g1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding ActualWidth, ElementName=NameBorder}" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+
+              <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition
+                    Width="{Binding Path=Padding.Left, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" />
+                  <ColumnDefinition Width="24" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton Grid.Column="1"
+                              x:Name="PART_Expander"
+                              ClickMode="Press"
+                              MaxWidth="16"
+                              HorizontalAlignment="Center"
+                              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                              Visibility="{Binding Path=HasItems, Converter={StaticResource FrostyArrayToVisibilityConverter}}"
+                              Focusable="False"
+                              Template="{StaticResource itemToggleButton}"
+                              VerticalAlignment="Top"
+                              Margin="0 1 0 0" />
+
+                <Grid Grid.Column="2">
+                  <ContentControl x:Name="PART_Name"
+                                  Margin="2,0,2,0"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Stretch"
+                                  Padding="{Binding Path=Padding, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}"
+                                  Focusable="False">
+                    <local:FrostyHightlightTextBlock Text="{Binding Path=DisplayName}"
+                                                     HighlightText="{Binding Path=FilterText, RelativeSource={RelativeSource AncestorType={x:Type local:FrostyPropertyGrid}}}"
+                                                     FontFamily="Global User Interface"
+                                                     FontWeight="{Binding Path=IsModified, Converter={StaticResource FrostyValueModifiedConverter}}"
+                                                     Foreground="#DADADA" />
+                  </ContentControl>
+                </Grid>
+
+                <Grid.Style>
+                  <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Background"
+                            Value="Transparent" />
+                    <Style.Triggers>
+                      <Trigger Property="IsMouseOver"
+                               Value="True">
+                        <Setter Property="Background"
+                                Value="{StaticResource SubItemHighlight}" />
+                      </Trigger>
+                      <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}}"
+                                   Value="True">
+                        <Setter Property="Background"
+                                Value="{StaticResource SubItemHighlight}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Grid.Style>
+              </Grid>
+
+              <Grid Grid.Column="1"
+                    VerticalAlignment="Top"
+                    Height="19">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition x:Name="arrayColumn"
+                                      Width="0" />
+                  </Grid.ColumnDefinitions>
+                  <ContentControl x:Name="PART_Value"
+                                  Margin="6,0,0,0"
+                                  VerticalAlignment="Center"
+                                  Focusable="False"
+                                  Foreground="#f7f7f7" />
+                  <Button x:Name="PART_ArrayRemoveButton"
+                          Grid.Column="1"
+                          Width="17"
+                          Margin="1"
+                          Visibility="Collapsed"
+                          Padding="0"
+                          ToolTip="Remove item">
+                    <Button.Content>
+                      <Path Width="10"
+                            Height="10"
+                            Fill="#f7f7f7"
+                            Stretch="Uniform"
+                            Data="{Binding Path=Data, Source={StaticResource RemoveButtonIcon}}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+                    </Button.Content>
+                  </Button>
+                </Grid>
+              </Grid>
+
+            </Grid>
+
+            <!-- Category -->
+            <Grid x:Name="g2"
+                  Visibility="Collapsed">
+              <Grid Background="#3f3f3f">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition
+                    Width="{Binding Path=Padding.Left, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" />
+                  <ColumnDefinition Width="24" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton Grid.Column="1"
+                              ClickMode="Press"
+                              Width="9"
+                              Height="9"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                              Visibility="{Binding Path=HasItems, Converter={StaticResource FrostyArrayToVisibilityConverter}}"
+                              Focusable="False"
+                              Template="{StaticResource categoryToggleButton}" />
+
+                <Grid Grid.Column="2">
+                  <ContentControl Margin="2,0,2,0"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Stretch"
+                                  Padding="{Binding Path=Padding, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}"
+                                  Focusable="False">
+                    <TextBlock Text="{Binding Path=DisplayName}"
+                               FontFamily="Global User Interface"
+                               Foreground="#DADADA"
+                               FontWeight="Bold" />
+                  </ContentControl>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <!-- Children -->
+            <ContentControl Grid.ColumnSpan="2"
+                            Grid.Row="1"
+                            Grid.Column="0">
+              <ContentControl.Padding>
+                <MultiBinding Converter="{StaticResource FrostyArrayPaddingIncreaser}">
+                  <Binding Path="Padding"
+                           RelativeSource="{RelativeSource AncestorType={x:Type ContentControl}}" />
+                  <Binding Path="IsCategory" />
+                </MultiBinding>
+              </ContentControl.Padding>
+              <ItemsPresenter x:Name="ItemsHost"
+                              UseLayoutRounding="True"
+                              Visibility="Collapsed"
+                              KeyboardNavigation.IsTabStop="False" />
+            </ContentControl>
+
+          </Grid>
+          <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding Path=IsHidden}"
+                         Value="True">
+              <Setter Property="Visibility"
+                      Value="Collapsed" />
+            </DataTrigger>
+            <Trigger Property="IsExpanded"
+                     Value="True">
+              <Setter Property="Visibility"
+                      TargetName="ItemsHost"
+                      Value="Visible" />
+            </Trigger>
+            <DataTrigger Binding="{Binding Path=IsCategory}"
+                         Value="True">
+              <Setter TargetName="g1"
+                      Property="Visibility"
+                      Value="Collapsed" />
+              <Setter TargetName="PART_Value"
+                      Property="Visibility"
+                      Value="Collapsed" />
+              <Setter TargetName="g2"
+                      Property="Visibility"
+                      Value="Visible" />
+            </DataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding Path=IsArrayChild}"
+                           Value="True" />
+                <Condition Binding="{Binding Path=Parent.IsEnabled}"
+                           Value="True" />
+              </MultiDataTrigger.Conditions>
+              <MultiDataTrigger.Setters>
+                <Setter TargetName="arrayColumn"
+                        Property="Width"
+                        Value="19" />
+                <Setter TargetName="PART_ArrayRemoveButton"
+                        Property="Visibility"
+                        Value="Visible" />
+              </MultiDataTrigger.Setters>
+            </MultiDataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Property Grid -->
+  <Style TargetType="{x:Type local:FrostyPropertyGrid}">
+    <Setter Property="VerticalContentAlignment"
+            Value="Center" />
+    <Setter Property="OverridesDefaultStyle"
+            Value="True" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+            Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+            Value="Visible" />
+    <Setter Property="ScrollViewer.CanContentScroll"
+            Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type local:FrostyPropertyGrid}">
+          <ControlTemplate.Resources>
+            <local:FrostyObjectTypeConverter x:Key="FrostyObjectTypeConverter" />
+            <local:FrostyClassNameConverter x:Key="FrostyClassNameConverter" />
+          </ControlTemplate.Resources>
+          <Border BorderBrush="{StaticResource ControlBackground}"
+                  BorderThickness="0,2,0,0">
+            <Grid Background="#141414">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="26" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition x:Name="classViewRow"
+                               Height="80" />
+              </Grid.RowDefinitions>
+
+              <DockPanel Grid.Row="0"
+                         LastChildFill="True">
+                <Border Background="Transparent"
+                        Margin="1,1,1,1">
+                  <controls:FrostyWatermarkTextBox x:Name="PART_FilterTextBox"
+                                               WatermarkText="Filter"
+                                               BorderThickness="1"
+                                               Height="24"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalContentAlignment="Center"
+                                               Padding="4,0,0,0" />
+                </Border>
+              </DockPanel>
+
+              <Grid Grid.Row="1">
+                <ProgressBar x:Name="PART_FilterProgressBar"
+                             HorizontalAlignment="Stretch"
+                             Height="3"
+                             IsIndeterminate="True"
+                             Visibility="Collapsed" />
+              </Grid>
+
+              <Grid Grid.Row="2">
+                <local:FrostyPropertyGridTreeView x:Name="tv"
+                                                  Grid.ColumnSpan="2"
+                                                  VirtualizingPanel.IsVirtualizing="True"
+                                                  VirtualizingStackPanel.VirtualizationMode="Standard"
+                                                  ScrollViewer.IsDeferredScrollingEnabled="False"
+                                                  Background="Transparent"
+                                                  Padding="0"
+                                                  VerticalAlignment="Top"
+                                                  ItemContainerStyle="{StaticResource propertyGridTreeViewItem}"
+                                                  IsTabStop="True"
+                                                  Focusable="True"
+                                                  KeyboardNavigation.IsTabStop="True"
+                                                  KeyboardNavigation.TabNavigation="Continue">
+                  <local:FrostyPropertyGridTreeView.Template>
+                    <ControlTemplate TargetType="{x:Type TreeView}">
+                      <Border x:Name="Bd"
+                              SnapsToDevicePixels="True">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition
+                              Width="{Binding Path=InitialWidth, RelativeSource={RelativeSource AncestorType={x:Type local:FrostyPropertyGrid}}}"
+                              x:Name="resizeColumn" />
+                            <ColumnDefinition Width="*" />
+                          </Grid.ColumnDefinitions>
+                          <Border x:Name="NameBorder"
+                                  Background="#292929" />
+                          <Border Grid.Column="1"
+                                  Background="#141414" />
+                          <Grid Grid.ColumnSpan="2">
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="*" />
+                              <RowDefinition Height="2" />
+                            </Grid.RowDefinitions>
+                            <ScrollViewer x:Name="_tv_scrollviewer_"
+                                          Background="{TemplateBinding Background}"
+                                          CanContentScroll="False"
+                                          Focusable="False"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Padding="{TemplateBinding Padding}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                          VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                              <ItemsPresenter />
+                            </ScrollViewer>
+                            <Border Grid.Row="1"
+                                    Height="2"
+                                    HorizontalAlignment="Stretch"
+                                    Background="#3f3f3f" />
+                          </Grid>
+                          <GridSplitter HorizontalAlignment="Left"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Stretch"
+                                        Width="2"
+                                        Background="#3f3f3f" />
+                        </Grid>
+                      </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                          <Setter Property="Background"
+                                  TargetName="Bd"
+                                  Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+                        </Trigger>
+                        <Trigger Property="VirtualizingPanel.IsVirtualizing"
+                                 Value="True">
+                          <Setter Property="CanContentScroll"
+                                  TargetName="_tv_scrollviewer_"
+                                  Value="True" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </local:FrostyPropertyGridTreeView.Template>
+                </local:FrostyPropertyGridTreeView>
+                <Border x:Name="PART_FilterInProgresBorder"
+                        Background="{StaticResource ControlBackground}"
+                        Opacity="0.25"
+                        Visibility="Collapsed">
+                  <Grid>
+                    <TextBlock Text="Filter in progress"
+                               FontFamily="Global User Interface"
+                               FontSize="70"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                  </Grid>
+                </Border>
+              </Grid>
+
+              <Grid x:Name="classViewGrid"
+                    Grid.Row="3">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="19" />
+                  <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <Border Background="#454545">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="18" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock FontWeight="Bold"
+                               Margin="7 0 0 0"
+                               VerticalAlignment="Top">
+                      <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource FrostyObjectTypeConverter}"
+                                      ConverterParameter="Name">
+                          <Binding Path="Object"
+                                   RelativeSource="{RelativeSource TemplatedParent}" />
+                          <Binding Path="SelectedItem"
+                                   ElementName="tv" />
+                        </MultiBinding>
+                      </TextBlock.Text>
+                    </TextBlock>
+                    <Path Grid.Column="1"
+                          Fill="White"
+                          Width="11"
+                          Height="11"
+                          Data="m 4 9 h 2 v 2 H 4 Z M 1 4 V 1 H 2 V 0 H 8 V 1 H 9 V 6 H 8 V 7 H 6 V 8 H 4 V 6 H 5 V 5 H 7 V 2 H 3 v 2 z" />
+                  </Grid>
+                </Border>
+
+                <Grid Grid.Row="1">
+                  <TextBox Padding="4"
+                           IsReadOnly="True"
+                           VerticalScrollBarVisibility="Auto"
+                           TextWrapping="Wrap">
+                    <TextBox.Text>
+                      <MultiBinding Converter="{StaticResource FrostyObjectTypeConverter}"
+                                    ConverterParameter="Description">
+                        <Binding Path="Object"
+                                 RelativeSource="{RelativeSource TemplatedParent}"
+                                 Mode="OneWay" />
+                        <Binding Path="SelectedItem"
+                                 ElementName="tv"
+                                 Mode="OneWay" />
+                      </MultiBinding>
+                    </TextBox.Text>
+                  </TextBox>
+                </Grid>
+              </Grid>
+
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="ClassViewVisible"
+                     Value="False">
+              <Setter Property="Height"
+                      TargetName="classViewRow"
+                      Value="0" />
+              <Setter Property="Visibility"
+                      TargetName="classViewGrid"
+                      Value="Collapsed" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

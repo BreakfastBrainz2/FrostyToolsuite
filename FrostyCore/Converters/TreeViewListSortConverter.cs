@@ -11,7 +11,7 @@ public class TreeViewListSortConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         IList collection = (IList)value;
-        ListCollectionView view = new ListCollectionView(collection);
+        ListCollectionView view = new(collection);
         view.SortDescriptions.Add(new SortDescription(parameter.ToString(), ListSortDirection.Ascending));
 
         return view;

@@ -80,7 +80,7 @@ public class FrostyImagePathControl : Control
 
     private void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog ofd = new OpenFileDialog {Filter = filter};
+        OpenFileDialog ofd = new() {Filter = filter};
 
         if (ofd.ShowDialog() == true)
         {

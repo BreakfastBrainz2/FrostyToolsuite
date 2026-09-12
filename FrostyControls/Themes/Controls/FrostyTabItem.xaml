@@ -1,0 +1,121 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ctrl="clr-namespace:Frosty.Controls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <!-- FrostyTabItem -->
+  <Style TargetType="{x:Type ctrl:FrostyTabItem}">
+    <Setter Property="Foreground"
+            Value="{StaticResource FontColor}" />
+    <Setter Property="Padding"
+            Value="6,0,6,0" />
+    <Setter Property="HorizontalContentAlignment"
+            Value="Stretch" />
+    <Setter Property="VerticalContentAlignment"
+            Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type ctrl:FrostyTabItem}">
+          <Grid x:Name="templateRoot"
+                SnapsToDevicePixels="True"
+                UseLayoutRounding="True"
+                Height="20">
+            <StackPanel Orientation="Horizontal">
+              <Border x:Name="mainBorder"
+                      Background="{StaticResource ControlBackground}">
+                <Grid>
+                  <Grid Margin="{TemplateBinding Padding}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition MaxWidth="20" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Image x:Name="imageRect"
+                           Width="16"
+                           Height="16"
+                           Source="{Binding Path=Icon, RelativeSource={RelativeSource TemplatedParent}}"
+                           Margin="0,0,4,0" />
+                    <ContentPresenter Grid.Column="1"
+                                      Margin="0,0,0,0"
+                                      x:Name="contentPresenter"
+                                      ContentSource="Header"
+                                      Focusable="False"
+                                      HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                                      RecognizesAccessKey="False"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                      VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                    <Label x:Name="PART_DragLabel"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           Grid.ColumnSpan="3" />
+                    <Button x:Name="PART_CloseButton"
+                            Background="Transparent"
+                            Grid.Column="2"
+                            Width="16"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Margin="4,0,-2,0">
+                      <Image Source="/FrostyEditor;component/Images/CloseWindow.png"
+                             Margin="-2" />
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <Border x:Name="TabSeparatorDeco"
+                      Width="1"
+                      Height="22"
+                      Background="#1a1a1a" />
+            </StackPanel>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="CloseButtonVisible"
+                     Value="False">
+              <Setter Property="Visibility"
+                      TargetName="PART_CloseButton"
+                      Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="Icon"
+                     Value="{x:Null}">
+              <Setter Property="Visibility"
+                      TargetName="imageRect"
+                      Value="Collapsed" />
+            </Trigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}"
+                           Value="false" />
+                <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}"
+                           Value="Top" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Background"
+                      TargetName="mainBorder"
+                      Value="#292929" />
+              <Setter Property="Foreground"
+                      Value="#80F8F8F8" />
+              <Setter Property="Opacity"
+                      TargetName="imageRect"
+                      Value="0.5" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
+                           Value="true" />
+                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}"
+                           Value="false" />
+                <Condition Binding="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorType={x:Type TabControl}}}"
+                           Value="Top" />
+              </MultiDataTrigger.Conditions>
+              <Setter Property="Background"
+                      TargetName="mainBorder"
+                      Value="#333333" />
+            </MultiDataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

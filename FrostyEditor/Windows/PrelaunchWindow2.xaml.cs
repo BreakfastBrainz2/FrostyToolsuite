@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.IO;
@@ -9,7 +6,6 @@ using Microsoft.Win32;
 using Frosty.Controls;
 using Frosty.Core;
 using Frosty.Sdk;
-using FrostyEditor;
 
 namespace FrostyEditor.Windows;
 
@@ -37,10 +33,10 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         }
 
         // launch splash
-        //SplashWindow splash = new SplashWindow();
-        //App.Current.MainWindow = splash;
-        //splash.Show();
-        //Close();
+        SplashWindow splash = new SplashWindow();
+        App.Current.MainWindow = splash;
+        splash.Show();
+        Close();
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -54,7 +50,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
         if (!string.IsNullOrEmpty(defaultConfigName))
         {
-            defaultConfig = configs.Find(x => x.ProfileName == defaultConfigName);
+            defaultConfig = configs.Find(x => x.ProfileKey == defaultConfigName);
         }
 
         ConfigList.SelectedItem = defaultConfig;
@@ -67,7 +63,8 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            LaunchConfig(config.ProfileName);
+            App.SelectedProfile = config;
+            LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
         }
@@ -87,7 +84,8 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            LaunchConfig(config.ProfileName);
+            App.SelectedProfile = config;
+            LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
         }
@@ -96,7 +94,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
     private void NewConfigButton_Click(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog ofd = new OpenFileDialog
+        OpenFileDialog ofd = new()
         {
             Filter = "*.exe (Game Executable)|*.exe",
             Title = "Choose Game Executable"
@@ -105,7 +103,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         if (ofd.ShowDialog() == false)
             return;
 
-        FileInfo fi = new FileInfo(ofd.FileName);
+        FileInfo fi = new(ofd.FileName);
 
         string key = Path.GetFileNameWithoutExtension(fi.Name);
         // try to load game profile
@@ -118,7 +116,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         // make sure config doesnt already exist
         foreach (FrostyConfiguration config in configs)
         {
-            if (config.ProfileName == key)
+            if (config.ProfileKey == key)
             {
                 FrostyMessageBox.Show("That game already has a configuration.");
                 return;
@@ -174,14 +172,14 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
                 foreach (string filename in Directory.EnumerateFiles(installDir, "*.exe"))
                 {
-                    FileInfo fi = new FileInfo(filename);
+                    FileInfo fi = new(filename);
                     string nameWithoutExt = fi.Name.Replace(fi.Extension, "");
 
                     if (ProfilesLibrary.HasProfile(nameWithoutExt))
                     {
                         foreach (FrostyConfiguration config in configs)
                         {
-                            if (config.ProfileName == fi.Name.Remove(fi.Name.Length - 4))
+                            if (config.ProfileKey == fi.Name.Remove(fi.Name.Length - 4))
                                 return;
                         }
 
@@ -201,7 +199,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         {
             FrostyConfiguration selectedItem = ConfigList.SelectedItem as FrostyConfiguration;
 
-            Config.RemoveGame(selectedItem.ProfileName);
+            Config.RemoveGame(selectedItem.ProfileKey);
 
             configs.Remove(selectedItem);
             ConfigList.Items.Refresh();

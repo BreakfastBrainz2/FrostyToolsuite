@@ -1,0 +1,29 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:editors="clr-namespace:Frosty.Core.Controls.Editors">
+  <Style TargetType="{x:Type editors:FrostySliderControl}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type editors:FrostySliderControl}">
+          <Grid Height="19">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="1*" />
+              <ColumnDefinition Width="3*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Text="{Binding Path=Value, ElementName=slider}"
+                     VerticalAlignment="Center" />
+            <Slider x:Name="slider"
+                    Grid.Column="1"
+                    Minimum="{Binding Path=Minimum, RelativeSource={RelativeSource TemplatedParent}}"
+                    Maximum="{Binding Path=Maximum, RelativeSource={RelativeSource TemplatedParent}}"
+                    SmallChange="{Binding Path=SmallChange, RelativeSource={RelativeSource TemplatedParent}}"
+                    LargeChange="{Binding Path=LargeChange, RelativeSource={RelativeSource TemplatedParent}}"
+                    IsSnapToTickEnabled="{Binding Path=IsSnapToTickEnabled, RelativeSource={RelativeSource TemplatedParent}}"
+                    Value="{Binding Path=Value, RelativeSource={RelativeSource TemplatedParent}}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

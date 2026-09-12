@@ -74,7 +74,7 @@ public class FrostyEnumControl : Control
             foreach (string str in comboBoxValues)
                 comboBox.Items.Add(str);
 
-            Binding b = new Binding("Value")
+            Binding b = new("Value")
             {
                 Source = this,
                 Mode = BindingMode.TwoWay,

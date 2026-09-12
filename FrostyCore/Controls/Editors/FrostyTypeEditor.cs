@@ -38,10 +38,10 @@ namespace Frosty.Core.Controls.Editors
 
         public T CreateEditor(FrostyPropertyGridItemData item)
         {
-            T editor = new T();
+            T editor = new();
             CustomizeEditor(editor, item);
 
-            Binding b = new Binding(ValuePath)
+            Binding b = new(ValuePath)
             {
                 Source = item,
                 Mode = BindingMode,
@@ -68,7 +68,7 @@ namespace Frosty.Core.Controls.Editors
 
         protected virtual void CustomizeEditor(T editor, FrostyPropertyGridItemData item)
         {
-            Binding b = new Binding("IsEnabled")
+            Binding b = new("IsEnabled")
             {
                 Source = item,
                 Mode = BindingMode.OneWay
