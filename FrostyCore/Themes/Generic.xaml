@@ -10,6 +10,8 @@
     <ResourceDictionary Source="/FrostyCore;component/Themes/Icons.xaml" />
     
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/FrostyPropertyGrid.xaml" />
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/FrostyAssetEditor.xaml" />
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/FrostyDataExplorer.xaml" />
     
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/Editors/FrostyPointerRefControl.xaml" />
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/Editors/FrostyArrayControl.xaml" />
@@ -21,6 +23,8 @@
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/Editors/FrostyCStringControl.xaml" />
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/Editors/FrostyStructControl.xaml" />
     <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/Editors/FrostySliderControl.xaml" />
+    
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Controls/FrostyAssetListView.xaml" />
   </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows;
-using Frosty.Sdk;
+using Frosty.Core.Windows;
 using Frosty.Sdk.Ebx;
 using Frosty.Sdk.Interfaces;
 using Frosty.Sdk.Managers;
@@ -142,7 +138,7 @@ public class FrostyAssetEditor : Control
     {
         if (entry is EbxAssetEntry ebxEntry)
         {
-            //FrostyTaskWindow.Show("Opening Asset", "", (task) =>
+            FrostyTaskWindow.Show("Opening Asset", "", (task) =>
             {
                 Asset = LoadAsset(ebxEntry);
 
@@ -154,12 +150,12 @@ public class FrostyAssetEditor : Control
                 {
                     EbxAssetEntry dependentEntry = AssetManager.GetEbxAssetEntry(guid);
 
-                    //task.Update(progress: (index++ / (double)totalCount) * 100.0d);
+                    task.Update(progress: (index++ / (double)totalCount) * 100.0d);
 
                     if (dependentEntry != null)
                         dependentObjects.Add(guid, AssetManager.GetEbxPartition(dependentEntry));
                 }
-            }//);
+            });
         }
 
         // now set entry

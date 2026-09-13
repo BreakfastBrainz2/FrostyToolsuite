@@ -59,11 +59,13 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
     private async void LaunchConfigButton_Click(object sender, RoutedEventArgs e)
     {
         if (ConfigList.SelectedIndex == -1)
+        {
             return;
+        }
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            App.SelectedProfile = config;
+            Frosty.Core.App.SelectedProfile = config;
             LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
@@ -80,11 +82,13 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
     private async void ConfigList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (ConfigList.SelectedIndex == -1)
+        {
             return;
+        }
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            App.SelectedProfile = config;
+            Frosty.Core.App.SelectedProfile = config;
             LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
@@ -101,7 +105,9 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         };
 
         if (ofd.ShowDialog() == false)
+        {
             return;
+        }
 
         FileInfo fi = new(ofd.FileName);
 
@@ -124,12 +130,14 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         }
 
         if (ProfilesLibrary.HasAntiCheat)
+        {
             FrostyMessageBox.Show("This game contains EasyAntiCheat and cannot automatically generate an sdk. We will not support nor assist anyone who attempts to bypass it.", "Warning");
+        }
 
         // create
         Config.AddGame(key, fi.FullName);
         configs.Add(new FrostyConfiguration(key));
-        Config.Save(App.ConfigPath);
+        Config.Save(Frosty.Core.App.ConfigPath);
 
         ConfigList.Items.Refresh();
     }
@@ -166,9 +174,14 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
             {
                 string installDir = subKey.GetValue("Install Dir") as string;
                 if (string.IsNullOrEmpty(installDir))
+                {
                     continue;
+                }
+
                 if (!Directory.Exists(installDir))
+                {
                     continue;
+                }
 
                 foreach (string filename in Directory.EnumerateFiles(installDir, "*.exe"))
                 {
@@ -180,7 +193,9 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
                         foreach (FrostyConfiguration config in configs)
                         {
                             if (config.ProfileKey == fi.Name.Remove(fi.Name.Length - 4))
+                            {
                                 return;
+                            }
                         }
 
                         Config.AddGame(fi.Name.Remove(fi.Name.Length - 4), fi.DirectoryName);
@@ -205,7 +220,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
             ConfigList.Items.Refresh();
 
             ConfigList.SelectedIndex = 0;
-            Config.Save(App.ConfigPath);
+            Config.Save(Frosty.Core.App.ConfigPath);
         }
     }
 
@@ -225,7 +240,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
                 Config.RemoveGame(profile);
             }
         }
-        Config.Save(App.ConfigPath);
+        Config.Save(Frosty.Core.App.ConfigPath);
 
         ConfigList.ItemsSource = configs;
     }

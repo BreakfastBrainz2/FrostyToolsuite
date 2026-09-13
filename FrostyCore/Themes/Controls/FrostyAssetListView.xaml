@@ -1,0 +1,97 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:Frosty.Core.Converters"
+                    xmlns:local="clr-namespace:Frosty.Core.Controls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+  <!-- FrostyAssetListView -->
+    <Style TargetType="{x:Type local:FrostyAssetListView}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:FrostyAssetListView}">
+                    <ControlTemplate.Resources>
+                        <converters:AssetEntryToBitmapSourceConverter x:Key="AssetEntryToBitmapSourceConverter"/>
+                    </ControlTemplate.Resources>
+                    <Grid>
+                        <ListView x:Name="PART_AssetListView" Grid.Row="3" HorizontalContentAlignment="Stretch" SelectionMode="Single" ItemsSource="{TemplateBinding ItemsSource}">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource baseListViewItemStyle}">
+                                    <Setter Property="ContextMenu" Value="{Binding Path=AssetContextMenu, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:FrostyAssetListView}}}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                                <Border x:Name="Border" Background="Transparent">
+                                                    <Border.InputBindings>
+                                                        <MouseBinding Gesture="LeftDoubleClick" Command="{Binding Path=DoubleClickCommand, RelativeSource={RelativeSource AncestorType={x:Type local:FrostyAssetListView}}}" />
+                                                    </Border.InputBindings>
+                                                    <GridViewRowPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" TargetName="Border" Value="{StaticResource SubItemHighlight}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" TargetName="Border" Value="{StaticResource SubItemPressed}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Width="{Binding Path=ActualWidth, ElementName=gridHelper1}" HeaderTemplate="{StaticResource assetListViewAscendingSorting}">
+                                        <GridViewColumn.Header>
+                                            <GridViewColumnHeader Tag="DisplayName" Content="Name"/>
+                                        </GridViewColumn.Header>
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Height="22">
+                                                    <Image x:Name="imageRect" Width="16" Height="16" Source="{Binding Path=., Converter={StaticResource AssetEntryToBitmapSourceConverter}}"/>
+                                                    <TextBlock x:Name="displayName" Margin="6,0,0,0" Text="{Binding Path=DisplayName}" VerticalAlignment="Center" FontFamily="MS Reference Sans Serif" FontWeight="Normal"/>
+                                                    <TextBlock x:Name="displayPath" Margin="6,0,0,0" VerticalAlignment="Center" FontFamily="MS Reference Sans Serif" FontWeight="Normal" Opacity="0.5">
+                                                        <TextBlock.Text>
+                                                            <Binding Path="Path" StringFormat="({0})"/>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=IsModified}" Value="True">
+                                                        <Setter Property="FontWeight" TargetName="displayName" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Width="{Binding Path=ActualWidth, ElementName=gridHelper2}">
+                                        <GridViewColumn.Header>
+                                            <GridViewColumnHeader Tag="Type" Content="Type"/>
+                                        </GridViewColumn.Header>
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Grid Height="22">
+                                                    <TextBlock Text="{Binding Path=Type}" VerticalAlignment="Center" FontFamily="MS Reference Sans Serif"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <Grid Visibility="Hidden" IsHitTestVisible="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" x:Name="gridHelper1"/>
+                            <Grid Grid.Column="1" x:Name="gridHelper2"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style> 
+</ResourceDictionary>

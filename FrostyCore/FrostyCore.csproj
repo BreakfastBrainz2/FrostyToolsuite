@@ -80,4 +80,12 @@
       <Resource Include="Images\Assets\SubWorldFileType.png" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Page Update="Themes\Controls\FrostyDataExplorer.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
 </Project>

@@ -20,10 +20,10 @@ public class FrostyCStringControl : FrostyEllipsedTextBox
     #region -- Properties --
 
     #region -- Value --
-    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(string), typeof(FrostyCStringControl), new FrameworkPropertyMetadata(new string("")));
-    public string Value
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(IPrimitive), typeof(FrostyCStringControl), new FrameworkPropertyMetadata(null));
+    public IPrimitive Value
     {
-        get => (string)GetValue(ValueProperty);
+        get => (IPrimitive)GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
     #endregion
@@ -43,11 +43,11 @@ public class FrostyCStringControl : FrostyEllipsedTextBox
 
     private void FrostyCStringControl_LostFocus(object sender, RoutedEventArgs e)
     {
-        string oldStr = Value;
+        string oldStr = (string)Value.ToActualType();
         string newStr = Text;
 
         if(!oldStr.Equals(newStr))
-            Value = newStr;
+            Value.FromActualType(newStr);
 
         ShowStringDisplay();
         //e.Handled = true;
@@ -55,7 +55,7 @@ public class FrostyCStringControl : FrostyEllipsedTextBox
 
     private void FrostyCStringControl_GotFocus(object sender, RoutedEventArgs e)
     {
-        Text = Value;
+        Text = (string)Value.ToActualType();
         ToolTip = null;
         SelectAll();
         //e.Handled = true;
@@ -63,7 +63,7 @@ public class FrostyCStringControl : FrostyEllipsedTextBox
 
     public void ShowStringDisplay()
     {
-        string value = Value;
+        string value = (string)Value.ToActualType();
         /*if (value.StartsWith("ID_"))
         {
             Text = LocalizedStringDatabase.Current.GetString(value);
@@ -75,7 +75,7 @@ public class FrostyCStringControl : FrostyEllipsedTextBox
 
     private void FrostyCStringControl_TargetUpdated(object sender, DataTransferEventArgs e)
     {
-        Text = Value;
+        Text = (string)Value.ToActualType();
         ShowStringDisplay();
     }
 }

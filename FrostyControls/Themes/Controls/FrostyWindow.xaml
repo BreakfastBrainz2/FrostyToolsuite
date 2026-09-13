@@ -3,6 +3,7 @@
                     xmlns:ctrl="clr-namespace:Frosty.Controls">
   <ResourceDictionary.MergedDictionaries>
     <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Icons.xaml" />
   </ResourceDictionary.MergedDictionaries>
   <!-- FrostyWindow -->
   <Style TargetType="{x:Type ctrl:FrostyWindow}">

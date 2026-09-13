@@ -43,6 +43,11 @@ public abstract class AssetEntry
     }
 
     /// <summary>
+    /// returns true if this asset or any asset linked to it is modified
+    /// </summary>
+    public virtual bool IsModified => false;
+
+    /// <summary>
     /// The name of this <see cref="AssetEntry"/>.
     /// </summary>
     public string Name { get; internal set; } = string.Empty;

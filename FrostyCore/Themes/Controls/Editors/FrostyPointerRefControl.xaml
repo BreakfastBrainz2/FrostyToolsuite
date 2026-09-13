@@ -3,6 +3,11 @@
                     xmlns:editors="clr-namespace:Frosty.Core.Controls.Editors"
                     xmlns:converters="clr-namespace:Frosty.Core.Converters"
                     xmlns:controls="clr-namespace:Frosty.Controls;assembly=FrostyControls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Icons.xaml" />
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Icons.xaml" />
+  </ResourceDictionary.MergedDictionaries>
   <Style TargetType="{x:Type editors:FrostyPointerRefControl}">
     <Setter Property="Template">
       <Setter.Value>

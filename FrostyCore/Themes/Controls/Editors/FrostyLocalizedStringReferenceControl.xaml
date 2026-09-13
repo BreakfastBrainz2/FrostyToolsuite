@@ -1,6 +1,11 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:editors="clr-namespace:Frosty.Core.Controls.Editors">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Icons.xaml" />
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Icons.xaml" />
+  </ResourceDictionary.MergedDictionaries>
   <Style TargetType="{x:Type editors:FrostyLocalizedStringReferenceControl}">
     <Setter Property="Padding"
             Value="0" />

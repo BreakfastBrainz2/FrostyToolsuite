@@ -2,8 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:Frosty.Core.Controls"
                     xmlns:controls="clr-namespace:Frosty.Controls;assembly=FrostyControls">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Brushes.xaml" />
+    <ResourceDictionary Source="/FrostyControls;component/Themes/Icons.xaml" />
+    <ResourceDictionary Source="/FrostyCore;component/Themes/Icons.xaml" />
+  </ResourceDictionary.MergedDictionaries>
   <!-- Property Grid Item -->
-  <ControlTemplate x:Key="itemToggleButton"
+  <ControlTemplate x:Key="ItemExpandButton"
                    TargetType="{x:Type ToggleButton}">
     <Border Background="Transparent"
             Height="16"
@@ -36,7 +41,7 @@
       </Trigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
-  <ControlTemplate x:Key="categoryToggleButton"
+  <ControlTemplate x:Key="CategoryToggleButton"
                    TargetType="{x:Type ToggleButton}">
     <Border Background="White"
             Height="9"
@@ -65,7 +70,7 @@
       </Trigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
-  <Style x:Key="propertyGridTreeViewItem"
+  <Style x:Key="PropertyGridTreeViewItem"
          TargetType="{x:Type local:FrostyPropertyGridItem}">
     <Style.Resources>
       <Style TargetType="{x:Type TextBlock}">
@@ -200,14 +205,8 @@
              BasedOn="{StaticResource {x:Type TextBoxBase}}">
         <Setter Property="Background"
                 Value="Transparent" />
-        <Setter Property="BorderThickness"
-                Value="0" />
-        <Setter Property="Foreground"
-                Value="{StaticResource FontColor}" />
         <Setter Property="Margin"
                 Value="-2 0" />
-        <Setter Property="CaretBrush"
-                Value="{StaticResource FontColor}" />
         <Setter Property="SelectionBrush"
                 Value="{StaticResource ControlBackground}" />
         <Setter Property="SelectionOpacity"
@@ -430,7 +429,7 @@
                               IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                               Visibility="{Binding Path=HasItems, Converter={StaticResource FrostyArrayToVisibilityConverter}}"
                               Focusable="False"
-                              Template="{StaticResource itemToggleButton}"
+                              Template="{StaticResource ItemExpandButton}"
                               VerticalAlignment="Top"
                               Margin="0 1 0 0" />
 
@@ -525,7 +524,7 @@
                               IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
                               Visibility="{Binding Path=HasItems, Converter={StaticResource FrostyArrayToVisibilityConverter}}"
                               Focusable="False"
-                              Template="{StaticResource categoryToggleButton}" />
+                              Template="{StaticResource CategoryToggleButton}" />
 
                 <Grid Grid.Column="2">
                   <ContentControl Margin="2,0,2,0"
@@ -641,12 +640,12 @@
                 <Border Background="Transparent"
                         Margin="1,1,1,1">
                   <controls:FrostyWatermarkTextBox x:Name="PART_FilterTextBox"
-                                               WatermarkText="Filter"
-                                               BorderThickness="1"
-                                               Height="24"
-                                               HorizontalAlignment="Stretch"
-                                               VerticalContentAlignment="Center"
-                                               Padding="4,0,0,0" />
+                                                   WatermarkText="Filter"
+                                                   BorderThickness="1"
+                                                   Height="24"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalContentAlignment="Center"
+                                                   Padding="4,0,0,0" />
                 </Border>
               </DockPanel>
 
@@ -667,7 +666,7 @@
                                                   Background="Transparent"
                                                   Padding="0"
                                                   VerticalAlignment="Top"
-                                                  ItemContainerStyle="{StaticResource propertyGridTreeViewItem}"
+                                                  ItemContainerStyle="{StaticResource PropertyGridTreeViewItem}"
                                                   IsTabStop="True"
                                                   Focusable="True"
                                                   KeyboardNavigation.IsTabStop="True"

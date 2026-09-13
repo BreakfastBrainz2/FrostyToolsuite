@@ -1,10 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Data;
 using System.Globalization;
-using System.Numerics;
-using System.Windows.Media;
 using Frosty.Sdk;
 using Frosty.Sdk.Attributes;
 

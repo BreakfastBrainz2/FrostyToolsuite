@@ -102,25 +102,25 @@ public partial class SplashWindow : Window
     public SplashWindow()
     {
         InitializeComponent();
-        versionTextBlock.Text = App.Version;
+        versionTextBlock.Text = Frosty.Core.App.Version;
         TaskbarItemInfo = new TaskbarItemInfo();
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        Config.Save(App.ConfigPath);
+        Config.Save(Frosty.Core.App.ConfigPath);
         FrostyLogger.Logger = new SplashWindowLogger(this);
 
         // set base directory to the directory containing the executable
         Utils.BaseDirectory = Path.GetDirectoryName(AppContext.BaseDirectory) ?? string.Empty;
 
-        App.Logger.LogInfo("Loading Profile For " + ProfilesLibrary.DisplayName);
+        Frosty.Core.App.Logger!.LogInfo("Loading Profile For " + ProfilesLibrary.DisplayName);
 
         profileTextBlock.Text = ProfilesLibrary.DisplayName;
         //bannerImage.Source = LoadBanner(ProfilesLibrary.Banner);
 
         // init profile
-        if (!ProfilesLibrary.Initialize(App.SelectedProfile.ProfileKey))
+        if (!ProfilesLibrary.Initialize(Frosty.Core.App.SelectedProfile.ProfileKey))
         {
             FrostyMessageBox.Show("There was an error when trying to load game using specified profile.", "Frosty Editor");
             Close();
@@ -135,7 +135,13 @@ public partial class SplashWindow : Window
             goto failed;
         }
 
-        App.Logger.Log("Initialization complete");
+        MainWindow win = new();
+        App.Current.MainWindow = win;
+        win.Show();
+
+        Frosty.Core.App.Logger.LogInfo("Initialization complete");
+
+        FrostyLogger.Logger = Frosty.Core.App.Logger;
 
         Close();
         return;
@@ -156,7 +162,7 @@ public partial class SplashWindow : Window
         {
             FrostyLogger.Logger.LogInfo("Initializing FileSystemManager");
             // init filesystem manager, this parses the layout.toc file
-            if (!FileSystemManager.Initialize(App.SelectedProfile.GameDir))
+            if (!FileSystemManager.Initialize(Frosty.Core.App.SelectedProfile.GameDir))
             {
                 return false;
             }

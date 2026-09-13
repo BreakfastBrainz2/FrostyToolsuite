@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,7 +10,6 @@ using System.Windows.Media;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Markup;
-using Frosty.Core.Attributes;
 using Frosty.Core.Controls.Editors;
 using Frosty.Core.Converters;
 using Frosty.Sdk.Attributes;
@@ -143,7 +138,7 @@ public class FrostyObjectTypeConverter : IMultiValueConverter
             return attr != null ? attr.Description : "";
         }*/
 
-        return "FUCKFUCKFUCKTEST";
+        return "";
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

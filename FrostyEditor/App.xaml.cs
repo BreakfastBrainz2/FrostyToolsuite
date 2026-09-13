@@ -10,15 +10,13 @@ namespace FrostyEditor;
 /// </summary>
 public partial class App : Application
 {
-    public static string ConfigPath = Path.Combine(AppContext.BaseDirectory, "editor_config.json");
-    public static string Version = "2.0.0";
-    public static FrostyConfiguration SelectedProfile;
-
-    public static Logger Logger = new();
-
     private void App_Startup(object sender, StartupEventArgs e)
     {
+        Frosty.Core.App.Logger = new Logger();
+        Frosty.Core.App.ConfigPath = Path.Combine(AppContext.BaseDirectory, "editor_config.json");
+        Frosty.Core.App.PluginManager = new PluginManager(Frosty.Core.App.Logger, PluginManagerType.Editor);
+
         ProfilesLibrary.Initialize();
-        Config.Load(ConfigPath);
+        Config.Load(Frosty.Core.App.ConfigPath);
     }
 }
