@@ -10,7 +10,7 @@ using Frosty.Sdk.Utils;
 
 namespace Frosty.ModSupport.Mod;
 
-public class FrostyMod : IResourceContainer
+public class FrostyMod : IResourceContainer, IFrostyMod
 {
     /// <summary>
     /// Mod Format Versions:
@@ -33,6 +33,10 @@ public class FrostyMod : IResourceContainer
     public IEnumerable<BaseModResource> Resources => m_resources;
 
     public FrostyModDetails ModDetails { get; }
+    public IEnumerable<string> Warnings { get; }
+    public bool HasWarnings { get; } = false;
+    public string Filename { get; }
+    public string Path { get; }
 
     public uint Head { get; }
 
@@ -41,13 +45,15 @@ public class FrostyMod : IResourceContainer
     private BaseModResource[] m_resources;
     private ResourceData[] m_data;
 
-    private FrostyMod(FrostyModDetails inModDetails, uint inHead, Sha1 inSha1, BaseModResource[] inResources, ResourceData[] inData)
+    private FrostyMod(string inPath, FrostyModDetails inModDetails, uint inHead, Sha1 inSha1, BaseModResource[] inResources, ResourceData[] inData)
     {
         ModDetails = inModDetails;
         Head = inHead;
         Sha1 = inSha1;
         m_resources = inResources;
         m_data = inData;
+        Path = inPath;
+        Filename = System.IO.Path.GetFileName(inPath);
     }
 
     public ResourceData GetData(int inIndex)
@@ -140,7 +146,7 @@ public class FrostyMod : IResourceContainer
                 data[i] = new ResourceData(fileInfo.FullName, offset + stream.ReadInt64(), stream.ReadInt32());
             }
 
-            return new FrostyMod(modDetails, head, sha1, resources, data);
+            return new FrostyMod(inPath, modDetails, head, sha1, resources, data);
         }
     }
 

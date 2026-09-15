@@ -166,7 +166,7 @@ public class EditorLinearTransform
     public dynamic Translation { get; set; }
 
     // vec3 (roll/pitch/yaw) rotation
-    [Sdk.Attributes.Editor(typeof(FrostyRotationEditor))]
+    [Editor(typeof(FrostyRotationEditor))]
     public dynamic Rotation { get; set; }
 
     // vec3 scale

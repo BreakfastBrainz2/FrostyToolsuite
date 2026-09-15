@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Frosty.ModSupport.Interfaces;
 using Frosty.Sdk.IO;
 
 namespace Frosty.ModSupport.Mod;
 
-public class FrostyModCollection
+public class FrostyModCollection : IFrostyMod
 {
     public class Manifest
     {
@@ -21,6 +22,11 @@ public class FrostyModCollection
     }
 
     public IEnumerable<FrostyMod> Mods => m_mods;
+    public FrostyModDetails ModDetails { get; }
+    public IEnumerable<string> Warnings { get; }
+    public bool HasWarnings { get; } = false;
+    public string Filename { get; }
+    public string Path { get; }
 
     /// <summary>
     /// 'FCOL'
@@ -28,18 +34,19 @@ public class FrostyModCollection
     private static readonly uint s_magic = 0x46434F4C;
     private static readonly uint s_version = 1;
 
-    private FrostyModDetails m_modDetails;
     private ResourceData m_icon;
     private ResourceData[] m_screenshots;
     private FrostyMod[] m_mods;
 
-    private FrostyModCollection(FrostyModDetails inModDetails, ResourceData inIcon, ResourceData[] inScreenshots,
+    private FrostyModCollection(string inPath, FrostyModDetails inModDetails, ResourceData inIcon, ResourceData[] inScreenshots,
         FrostyMod[] inMods)
     {
-        m_modDetails = inModDetails;
+        ModDetails = inModDetails;
         m_icon = inIcon;
         m_screenshots = inScreenshots;
         m_mods = inMods;
+        Path = inPath;
+        Filename = System.IO.Path.GetFileName(inPath);
     }
 
     public static FrostyModCollection? Load(string inPath)
@@ -102,7 +109,7 @@ public class FrostyModCollection
                 mods[i] = mod;
             }
 
-            return new FrostyModCollection(modDetails, icon, screenshots, mods);
+            return new FrostyModCollection(inPath, modDetails, icon, screenshots, mods);
         }
     }
 

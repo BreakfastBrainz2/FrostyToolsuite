@@ -13,7 +13,7 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
     public VirtualizingTilePanel()
     {
         // For use in the IScrollInfo implementation
-        this.RenderTransform = _trans;
+        RenderTransform = _trans;
     }
 
     // Dependency property that controls the size of the child elements
@@ -46,8 +46,8 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
         GetVisibleRange(out int firstVisibleItemIndex, out int lastVisibleItemIndex);
 
         // We need to access InternalChildren before the generator to work around a bug
-        UIElementCollection children = this.InternalChildren;
-        IItemContainerGenerator generator = this.ItemContainerGenerator;
+        UIElementCollection children = InternalChildren;
+        IItemContainerGenerator generator = ItemContainerGenerator;
 
         // Get the generator position of the first visible data item
         GeneratorPosition startPos = generator.GeneratorPositionFromIndex(firstVisibleItemIndex);
@@ -68,11 +68,11 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
                     // Figure out if we need to insert the child at the end or somewhere in the middle
                     if (childIndex >= children.Count)
                     {
-                        base.AddInternalChild(child);
+                        AddInternalChild(child);
                     }
                     else
                     {
-                        base.InsertInternalChild(childIndex, child);
+                        InsertInternalChild(childIndex, child);
                     }
                     generator.PrepareItemContainer(child);
                 }
@@ -100,13 +100,13 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
     /// <returns>Size used</returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
-        IItemContainerGenerator generator = this.ItemContainerGenerator;
+        IItemContainerGenerator generator = ItemContainerGenerator;
 
         UpdateScrollInfo(finalSize);
 
-        for (int i = 0; i < this.Children.Count; i++)
+        for (int i = 0; i < Children.Count; i++)
         {
-            UIElement child = this.Children[i];
+            UIElement child = Children[i];
 
             // Map the child offset to an item offset
             int itemIndex = generator.IndexFromGeneratorPosition(new GeneratorPosition(i, 0));
@@ -124,8 +124,8 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
     /// <param name="maxDesiredGenerated">last item index that should be visible</param>
     private void CleanUpItems(int minDesiredGenerated, int maxDesiredGenerated)
     {
-        UIElementCollection children = this.InternalChildren;
-        IItemContainerGenerator generator = this.ItemContainerGenerator;
+        UIElementCollection children = InternalChildren;
+        IItemContainerGenerator generator = ItemContainerGenerator;
 
         for (int i = children.Count - 1; i >= 0; i--)
         {
@@ -228,9 +228,9 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
         // Figure out how many children fit on each row
         int childrenPerRow;
         if (availableSize.Width == Double.PositiveInfinity)
-            childrenPerRow = this.Children.Count;
+            childrenPerRow = Children.Count;
         else
-            childrenPerRow = Math.Max(1, (int)Math.Floor(availableSize.Width / this.ChildSize));
+            childrenPerRow = Math.Max(1, (int)Math.Floor(availableSize.Width / ChildSize));
         return childrenPerRow;
     }
 
@@ -287,14 +287,14 @@ class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
     public double ViewportHeight => _viewport.Height;
     public double ViewportWidth => _viewport.Width;
 
-    public void LineUp()   => SetVerticalOffset(this.VerticalOffset - 10);
-    public void LineDown() => SetVerticalOffset(this.VerticalOffset + 10);
+    public void LineUp()   => SetVerticalOffset(VerticalOffset - 10);
+    public void LineDown() => SetVerticalOffset(VerticalOffset + 10);
 
-    public void PageUp()   => SetVerticalOffset(this.VerticalOffset - _viewport.Height);
-    public void PageDown() => SetVerticalOffset(this.VerticalOffset + _viewport.Height);
+    public void PageUp()   => SetVerticalOffset(VerticalOffset - _viewport.Height);
+    public void PageDown() => SetVerticalOffset(VerticalOffset + _viewport.Height);
 
-    public void MouseWheelUp()   => SetVerticalOffset(this.VerticalOffset - 10);
-    public void MouseWheelDown() => SetVerticalOffset(this.VerticalOffset + 10);
+    public void MouseWheelUp()   => SetVerticalOffset(VerticalOffset - 10);
+    public void MouseWheelDown() => SetVerticalOffset(VerticalOffset + 10);
 
     public Rect MakeVisible(Visual visual, Rect rectangle) => new Rect();
 

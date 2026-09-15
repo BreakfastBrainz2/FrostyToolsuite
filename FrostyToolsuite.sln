@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrostyControls", "FrostyCon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrostyEditor", "FrostyEditor\FrostyEditor.csproj", "{D6641E0A-0273-4CCC-9E5C-BFC8A2A9994C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrostyModManager", "FrostyModManager\FrostyModManager.csproj", "{45BF6E58-ABB0-412B-9845-A9357EE910FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{D6641E0A-0273-4CCC-9E5C-BFC8A2A9994C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6641E0A-0273-4CCC-9E5C-BFC8A2A9994C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6641E0A-0273-4CCC-9E5C-BFC8A2A9994C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45BF6E58-ABB0-412B-9845-A9357EE910FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45BF6E58-ABB0-412B-9845-A9357EE910FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45BF6E58-ABB0-412B-9845-A9357EE910FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45BF6E58-ABB0-412B-9845-A9357EE910FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

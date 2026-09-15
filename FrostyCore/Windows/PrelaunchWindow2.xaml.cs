@@ -5,9 +5,10 @@ using System.IO;
 using Microsoft.Win32;
 using Frosty.Controls;
 using Frosty.Core;
+using Frosty.Core.Interfaces;
 using Frosty.Sdk;
 
-namespace FrostyEditor.Windows;
+namespace Frosty.Core.Windows;
 
 /// <summary>
 /// Interaction logic for PrelaunchWindow2.xaml
@@ -16,9 +17,11 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 {
     private List<FrostyConfiguration> configs = new();
     private FrostyConfiguration defaultConfig;
+    private IFrostyApplication m_frostyApp;
 
-    public PrelaunchWindow2()
+    public PrelaunchWindow2(IFrostyApplication frostyApp)
     {
+        m_frostyApp = frostyApp;
         InitializeComponent();
     }
 
@@ -32,10 +35,10 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
             return;
         }
 
-        // launch splash
-        SplashWindow splash = new SplashWindow();
-        App.Current.MainWindow = splash;
-        splash.Show();
+        m_frostyApp.OnPrelaunchCompleted();
+        //SplashWindow splash = new SplashWindow();
+        //App.Current.MainWindow = splash;
+        //splash.Show();
         Close();
     }
 
@@ -65,7 +68,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            Frosty.Core.App.SelectedProfile = config;
+            App.SelectedProfile = config;
             LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
@@ -88,7 +91,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
 
         if (ConfigList.SelectedItem is FrostyConfiguration config)
         {
-            Frosty.Core.App.SelectedProfile = config;
+            App.SelectedProfile = config;
             LaunchConfig(config.ProfileKey);
             await Task.Delay(1);
             Close();
@@ -137,7 +140,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
         // create
         Config.AddGame(key, fi.FullName);
         configs.Add(new FrostyConfiguration(key));
-        Config.Save(Frosty.Core.App.ConfigPath);
+        Config.Save(App.ConfigPath);
 
         ConfigList.Items.Refresh();
     }
@@ -220,7 +223,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
             ConfigList.Items.Refresh();
 
             ConfigList.SelectedIndex = 0;
-            Config.Save(Frosty.Core.App.ConfigPath);
+            Config.Save(App.ConfigPath);
         }
     }
 
@@ -240,7 +243,7 @@ public partial class PrelaunchWindow2 : FrostyDockableWindow
                 Config.RemoveGame(profile);
             }
         }
-        Config.Save(Frosty.Core.App.ConfigPath);
+        Config.Save(App.ConfigPath);
 
         ConfigList.ItemsSource = configs;
     }

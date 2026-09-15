@@ -1,22 +1,25 @@
-﻿using System.IO;
+﻿using System.Configuration;
+using System.Data;
+using System.IO;
 using System.Windows;
 using Frosty.Core;
 using Frosty.Core.Interfaces;
 using Frosty.Core.Windows;
 using Frosty.Sdk;
+using FrostyModManager.Windows;
 
-namespace FrostyEditor;
+namespace FrostyModManager;
 
 /// <summary>
 /// Interaction logic for App.xaml
 /// </summary>
 public partial class App : Application, IFrostyApplication
 {
-    private void App_Startup(object sender, StartupEventArgs e)
+    private void App_OnStartup(object sender, StartupEventArgs e)
     {
         Frosty.Core.App.Logger = new Logger();
-        Frosty.Core.App.ConfigPath = Path.Combine(AppContext.BaseDirectory, "editor_config.json");
-        Frosty.Core.App.PluginManager = new PluginManager(Frosty.Core.App.Logger, PluginManagerType.Editor);
+        Frosty.Core.App.ConfigPath = Path.Combine(AppContext.BaseDirectory, "modmanager_config.json");
+        Frosty.Core.App.PluginManager = new PluginManager(Frosty.Core.App.Logger, PluginManagerType.ModManager);
 
         ProfilesLibrary.Initialize();
         Config.Load(Frosty.Core.App.ConfigPath);

@@ -1,10 +1,4 @@
-﻿using Frosty.Core.Controls;
-using Frosty.Core.Windows;
-using FrostyEditor.Windows;
-using System;
-using System.IO;
-using System.Threading;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace FrostyEditor.Commands;
 

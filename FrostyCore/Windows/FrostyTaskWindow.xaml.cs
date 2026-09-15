@@ -128,7 +128,7 @@ public partial class FrostyTaskWindow : Window, INotifyPropertyChanged
             _callback(this);
         });
 
-        Application.Current.MainWindow.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+        Application.Current.MainWindow.TaskbarItemInfo.ProgressState = TaskbarItemProgressState.None;
 
         Close();
     }
@@ -152,7 +152,7 @@ public partial class FrostyTaskWindow : Window, INotifyPropertyChanged
         Application.Current.Dispatcher.Invoke(() =>
         {
             taskProgressBar.IsIndeterminate = newIndeterminate;
-            Application.Current.MainWindow.TaskbarItemInfo.ProgressState = (newIndeterminate) ? System.Windows.Shell.TaskbarItemProgressState.Indeterminate : System.Windows.Shell.TaskbarItemProgressState.Normal;
+            Application.Current.MainWindow.TaskbarItemInfo.ProgressState = (newIndeterminate) ? TaskbarItemProgressState.Indeterminate : TaskbarItemProgressState.Normal;
         });
     }
 

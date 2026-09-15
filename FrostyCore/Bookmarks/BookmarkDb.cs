@@ -173,7 +173,7 @@ public static class BookmarkDb
         }
 
         Config.Add("BookmarkDb", string.Join("|", lines), ConfigScope.Game);
-        Config.Save(Frosty.Core.App.ConfigPath);
+        Config.Save(App.ConfigPath);
         //Config.Add("Bookmarks", "BookmarkDb", string.Join("|", lines));
     }
 }

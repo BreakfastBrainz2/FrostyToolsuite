@@ -11,11 +11,12 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Diagnostics;
 using System.Windows.Shell;
+using Frosty.Core.Interfaces;
 using Frosty.Core.Windows;
 using Frosty.Sdk.Interfaces;
 using Frosty.Sdk.Utils;
 
-namespace FrostyEditor.Windows;
+namespace Frosty.Core.Windows;
 
 internal class SplashWindowLogger : ILogger, INotifyPropertyChanged
 {
@@ -99,28 +100,32 @@ internal class SplashWindowLogger : ILogger, INotifyPropertyChanged
 /// </summary>
 public partial class SplashWindow : Window
 {
-    public SplashWindow()
+    private IFrostyApplication m_frostyApp;
+
+    public SplashWindow(IFrostyApplication frostyApp)
     {
+        m_frostyApp = frostyApp;
+
         InitializeComponent();
-        versionTextBlock.Text = Frosty.Core.App.Version;
+        versionTextBlock.Text = App.Version;
         TaskbarItemInfo = new TaskbarItemInfo();
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        Config.Save(Frosty.Core.App.ConfigPath);
+        Config.Save(App.ConfigPath);
         FrostyLogger.Logger = new SplashWindowLogger(this);
 
         // set base directory to the directory containing the executable
         Utils.BaseDirectory = Path.GetDirectoryName(AppContext.BaseDirectory) ?? string.Empty;
 
-        Frosty.Core.App.Logger!.LogInfo("Loading Profile For " + ProfilesLibrary.DisplayName);
+        App.Logger!.LogInfo("Loading Profile For " + ProfilesLibrary.DisplayName);
 
         profileTextBlock.Text = ProfilesLibrary.DisplayName;
         //bannerImage.Source = LoadBanner(ProfilesLibrary.Banner);
 
         // init profile
-        if (!ProfilesLibrary.Initialize(Frosty.Core.App.SelectedProfile.ProfileKey))
+        if (!ProfilesLibrary.Initialize(App.SelectedProfile.ProfileKey))
         {
             FrostyMessageBox.Show("There was an error when trying to load game using specified profile.", "Frosty Editor");
             Close();
@@ -129,19 +134,28 @@ public partial class SplashWindow : Window
 
         // TODO: key loading here
 
+        // generate sdk if needed
+        string sdkPath = ProfilesLibrary.SdkPath;
+        if (!File.Exists(sdkPath))
+        {
+            SdkUpdateWindow sdkWin = new(this);
+            sdkWin.ShowDialog();
+        }
+
         bool initialized = await InitGameData();
         if (!initialized)
         {
             goto failed;
         }
 
-        MainWindow win = new();
-        App.Current.MainWindow = win;
-        win.Show();
+        m_frostyApp.OnSplashCompleted();
+        //MainWindow win = new();
+        //App.Current.MainWindow = win;
+        //win.Show();
 
-        Frosty.Core.App.Logger.LogInfo("Initialization complete");
+        App.Logger.LogInfo("Initialization complete");
 
-        FrostyLogger.Logger = Frosty.Core.App.Logger;
+        FrostyLogger.Logger = App.Logger;
 
         Close();
         return;
@@ -153,7 +167,7 @@ public partial class SplashWindow : Window
 
     private void Grid_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        this.DragMove();
+        DragMove();
     }
 
     private async Task<bool> InitGameData()
@@ -162,17 +176,9 @@ public partial class SplashWindow : Window
         {
             FrostyLogger.Logger.LogInfo("Initializing FileSystemManager");
             // init filesystem manager, this parses the layout.toc file
-            if (!FileSystemManager.Initialize(Frosty.Core.App.SelectedProfile.GameDir))
+            if (!FileSystemManager.Initialize(App.SelectedProfile.GameDir))
             {
                 return false;
-            }
-
-            // generate sdk if needed
-            string sdkPath = ProfilesLibrary.SdkPath;
-            if (!File.Exists(sdkPath))
-            {
-                SdkUpdateWindow sdkWin = new(this);
-                sdkWin.ShowDialog();
             }
 
             FrostyLogger.Logger.LogInfo("Initializing TypeLibrary");
